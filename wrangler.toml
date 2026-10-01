@@ -1,0 +1,36 @@
+name = "donor-stream"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+# D1 veritabanı bağlantısı
+# `wrangler d1 create donor-stream-db` komutunu çalıştırdıktan sonra
+# çıktıdaki database_id'yi buraya yapıştır.
+[[d1_databases]]
+binding = "DB"
+database_name = "donor-stream-db"
+database_id = "74e720ea-5ce4-4fe8-a382-1cd3f92d597a"
+
+# Statik dosyaları (login, watch, admin sayfaları) servis etmek için
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# Moderatör odası - anlık istek/onay durumunu tutan Durable Object
+[[durable_objects.bindings]]
+name = "MODERATOR_ROOM"
+class_name = "ModeratorRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ModeratorRoom"]
+
+# Gizli değerler (wrangler secret put KOMUTU ile ekleyeceksin, buraya yazma!)
+# RESEND_API_KEY        -> Resend.com API anahtarı
+# ADMIN_PASSWORD         -> Admin paneline giriş şifresi
+# SESSION_SECRET         -> Oturum imzalama anahtarı (rastgele uzun bir string)
+# STREAM_CUSTOMER_CODE   -> Cloudflare Stream customer subdomain kodun
+# STREAM_LIVE_INPUT_UID  -> İzletmek istediğin Live Input UID'si (Playback ID)
+# CF_REALTIME_APP_ID     -> Cloudflare Realtime (Calls) Application ID
+# CF_REALTIME_APP_TOKEN  -> Cloudflare Realtime (Calls) App Secret/Token
+# CF_ACCOUNT_ID           -> Cloudflare Account ID (rapor ekranı için, kayıtlı videoları listelemede kullanılır)
+# CF_STREAM_API_TOKEN     -> Stream:Edit izinli Cloudflare API Token (rapor ekranı için)
