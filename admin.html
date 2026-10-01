@@ -1,0 +1,2428 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Bağışçı Listesi</title>
+    <style>
+      :root {
+        --bg: #f5f4f2;
+        --card: #ffffff;
+        --accent: #c10100;
+        --text: #111111;
+        --muted: #666666;
+        --error: #c10100;
+        --ok: #157347;
+        --line: #e2e0dc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, sans-serif;
+      }
+      .page-wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 100px 20px 60px;
+      }
+      .card {
+        background: var(--card);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+        border: 1px solid var(--line);
+        position: relative;
+      }
+      h1 {
+        font-size: 19px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 14px;
+        color: var(--muted);
+        font-weight: 400;
+        margin: 0 0 16px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
+        font-size: 14px;
+        margin-bottom: 10px;
+        font-family: inherit;
+      }
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+      button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        background: var(--accent);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      button.secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--line);
+      }
+      .msg {
+        margin-top: 10px;
+        font-size: 13px;
+      }
+      .msg.error {
+        color: var(--error);
+      }
+      .msg.success {
+        color: var(--ok);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 6px;
+        font-size: 13px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 6px;
+        border-bottom: 1px solid var(--line);
+      }
+      .rm {
+        background: transparent;
+        color: var(--error);
+        padding: 4px 10px;
+        font-size: 12px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+        gap: 10px;
+      }
+      .row:last-child {
+        border-bottom: none;
+      }
+      .who {
+        font-size: 13px;
+      }
+      .who .type {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .field-label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 4px;
+        margin-top: 12px;
+      }
+      .field-label:first-of-type {
+        margin-top: 0;
+      }
+      .row-2 {
+        display: flex;
+        gap: 12px;
+      }
+      .row-2 > div {
+        flex: 1;
+      }
+      .divider {
+        border: none;
+        border-top: 1px solid var(--line);
+        margin: 22px 0;
+      }
+      .sub-heading {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 20;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .top-bar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .top-bar-brand img {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+      }
+      .top-bar-brand span {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .tabs {
+        display: flex;
+        gap: 6px;
+      }
+      .tab-btn {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .tab-btn.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .report-btn {
+        background: #fff;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+      }
+      .tab-section {
+        display: none;
+      }
+      .tab-section.active {
+        display: block;
+      }
+
+      #gate {
+        max-width: 360px;
+        margin: 100px auto 0;
+      }
+      .brand-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        margin: 0 auto 24px;
+      }
+      .brand-block .logo-badge {
+        width: 64px;
+        height: 64px;
+        border-radius: 10px;
+        background: #fff;
+        border: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .brand-block .logo-badge img {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+      }
+      .brand-block .org {
+        margin: 8px 0 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .mail-preview {
+        background: #faf9f7;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+        font-size: 13px;
+        color: var(--text);
+        max-height: 260px;
+        overflow-y: auto;
+      }
+      .mail-preview p {
+        margin: 6px 0;
+      }
+
+      .ev-row {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .ev-row .ev-title {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .ev-row .ev-meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 3px;
+      }
+      .status-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: 6px;
+        vertical-align: middle;
+      }
+      .status-scheduled {
+        background: #e7f5ec;
+        color: #157347;
+      }
+      .status-draft {
+        background: #eee;
+        color: #555;
+      }
+      .status-postponed {
+        background: #fff4e0;
+        color: #a15c00;
+      }
+      .status-cancelled {
+        background: #fdecec;
+        color: var(--accent);
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .modal-box {
+        background: #fff;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 480px;
+        max-height: 88vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--line);
+      }
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 22px 0;
+        flex-shrink: 0;
+      }
+      .modal-header h1 {
+        font-size: 15px;
+      }
+      .modal-close {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0 4px;
+      }
+      .modal-tabs {
+        display: flex;
+        gap: 6px;
+        padding: 14px 22px 0;
+        flex-shrink: 0;
+      }
+      .modal-tab {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--muted);
+        padding: 8px 4px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 0;
+      }
+      .modal-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+      .modal-body {
+        padding: 16px 22px 22px;
+        overflow-y: auto;
+      }
+      .modal-panel {
+        display: none;
+      }
+      .modal-panel.active {
+        display: block;
+      }
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        margin: 10px 0;
+      }
+      .checkbox-row input {
+        width: auto;
+        margin: 0;
+      }
+
+      .report-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .report-modal-inner {
+        background: #fff;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 820px;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--line);
+      }
+      .report-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--line);
+        flex-shrink: 0;
+      }
+      .report-body {
+        padding: 20px 24px;
+        overflow-y: auto;
+      }
+      .report-event {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0;
+        margin-bottom: 14px;
+        overflow: hidden;
+      }
+      .report-event-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .report-event-header:hover {
+        background: #faf9f7;
+      }
+      .report-caret {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .report-event-body {
+        padding: 0 16px 14px;
+      }
+      .report-section {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        margin-top: 20px;
+        overflow: hidden;
+      }
+      .report-section .report-event-header {
+        padding: 14px 16px;
+      }
+      .report-section .report-event-body {
+        padding: 0 16px 16px;
+      }
+      .report-event h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+      }
+      .report-event .report-meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+      .report-participants {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .report-participants th,
+      .report-participants td {
+        text-align: left;
+        padding: 5px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      .report-status-ok {
+        color: #157347;
+      }
+      .report-status-fail {
+        color: var(--error);
+      }
+      .report-recording {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 13px;
+      }
+      .report-recording a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gate-wrap" class="page-wrap" style="padding-top: 40px">
+      <div class="brand-block">
+        <div class="logo-badge">
+          <img src="/logo.jpg" alt="Türk Kızılay logosu" />
+        </div>
+        <p class="org">Türk Kızılay</p>
+      </div>
+      <div id="gate" class="card">
+        <h1>Admin Girişi</h1>
+        <input type="password" id="pw" placeholder="Admin şifresi" />
+        <button id="login" style="width: 100%">Giriş</button>
+        <div class="msg error" id="gate-msg"></div>
+      </div>
+    </div>
+
+    <div id="top-bar" class="top-bar" style="display: none">
+      <div class="top-bar-brand">
+        <img src="/logo.jpg" alt="Türk Kızılay logosu" />
+        <span>Türk Kızılay Admin</span>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-events">
+          📅 Etkinlikler
+        </button>
+        <button class="tab-btn" data-tab="tab-donors">
+          ♾️ Süresiz Bağışçı Girişi
+        </button>
+        <button class="tab-btn" data-tab="tab-registered">
+          👥 Kayıtlı Bağışçılar
+        </button>
+        <button class="tab-btn" data-tab="tab-settings">⚙️ Ayarlar</button>
+      </div>
+      <button class="report-btn" id="report-open-btn">📊 Rapor</button>
+    </div>
+
+    <div id="panel" class="page-wrap" style="display: none">
+      <div id="tab-events" class="tab-section active">
+        <div class="card">
+          <h1>Etkinlik Planlama</h1>
+          <h2>Açılış planlama ve mail bildirimi.</h2>
+
+          <label class="field-label">Etkinlik Başlığı</label>
+          <input
+            type="text"
+            id="ev-title"
+            placeholder="Örn. Kars Konteyner Köy Açılışı"
+          />
+
+          <label class="field-label"
+            >Proje Adı (mailde [Proje Adı] yerine geçer)</label
+          >
+          <input
+            type="text"
+            id="ev-project"
+            placeholder="Örn. Kars Konteyner Köy Projesi"
+          />
+
+          <div class="row-2">
+            <div>
+              <label class="field-label">Tarih</label>
+              <input type="date" id="ev-date" />
+            </div>
+            <div>
+              <label class="field-label">Saat</label>
+              <input type="time" id="ev-time" />
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div>
+              <label class="field-label">Adı soyadı</label>
+              <input
+                type="text"
+                id="ev-participant-name"
+                placeholder="Sultan Köksal"
+              />
+            </div>
+            <div id="ev-participant-email-wrap">
+              <label class="field-label">E-posta</label>
+              <input
+                type="email"
+                id="ev-participant-email"
+                placeholder="ornek@eposta.com"
+              />
+            </div>
+          </div>
+          <label class="checkbox-row" style="margin: -2px 0 10px">
+            <input
+              type="checkbox"
+              id="ev-participant-no-email"
+              style="width: auto; margin: 0"
+            />
+            E-postası yok — sistem otomatik bir giriş linki üretsin, ben manuel
+            paylaşayım
+          </label>
+          <button id="ev-participant-add" class="secondary">+ Ekle</button>
+          <div class="msg" id="ev-participant-msg"></div>
+
+          <div id="ev-participants-rendered" style="margin-top: 10px">
+            <p style="color: var(--muted); font-size: 12px">
+              Henüz katılımcı eklenmedi.
+            </p>
+          </div>
+
+          <details style="margin-top: 14px">
+            <summary
+              style="cursor: pointer; font-size: 12px; color: var(--muted)"
+            >
+              Toplu ekle (Excel'den kopyala-yapıştır)
+            </summary>
+            <label class="field-label" style="margin-top: 10px"
+              >Her satıra bir kişi: <code>eposta,isim</code></label
+            >
+            <textarea
+              id="ev-csv-bulk-paste"
+              placeholder="sultan.koksal@ornek.com,Sultan Köksal&#10;ahmet@ornek.com,Ahmet Yılmaz"
+            ></textarea>
+            <button id="ev-csv-bulk-import" class="secondary">
+              Listeye Aktar
+            </button>
+          </details>
+
+          <textarea id="ev-csv" style="display: none"></textarea>
+
+          <div
+            id="ev-manual-links-wrap"
+            style="
+              display: none;
+              margin-top: 16px;
+              padding: 14px 16px;
+              background: #faf9f7;
+              border-radius: 8px;
+              border: 1px solid var(--line);
+            "
+          >
+            <p style="font-size: 12px; color: var(--muted); margin: 0 0 8px">
+              🔗 E-postası olmayan katılımcıların linkleri (paylaşmayı unutma).
+              Bu linkler <b>bu etkinliğe özeldir</b> — etkinlik tarihinden önce
+              açılırsa geri sayım gösterir, 2 gün sonra geçersiz olur.
+            </p>
+            <div id="ev-manual-links-list"></div>
+          </div>
+
+          <div class="row-2" style="margin-top: 16px">
+            <button id="ev-draft" class="secondary" style="width: 100%">
+              📝 Taslak Olarak Kaydet
+            </button>
+            <button id="ev-send" style="width: 100%">
+              📧 Mail Gönder (Tetikle)
+            </button>
+          </div>
+          <div class="msg" id="ev-msg"></div>
+
+          <div id="ev-preview-wrap" style="display: none; margin-top: 16px">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 6px;
+              "
+            >
+              <p style="font-size: 12px; color: var(--muted); margin: 0">
+                Gönderilecek mailin önizlemesi:
+              </p>
+              <button
+                id="ev-edit-toggle"
+                class="secondary"
+                style="font-size: 12px; padding: 5px 10px"
+                title="Metni düzenle"
+              >
+                ✏️ Düzenle
+              </button>
+            </div>
+            <div id="ev-preview" class="mail-preview">
+              <div id="ev-preview-header"></div>
+              <div id="ev-preview-narrative-view"></div>
+              <div id="ev-preview-info"></div>
+              <div id="ev-preview-closing"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h1>Son Etkinlikler</h1>
+          <h2>Durumu güncelle, katılımcı ekle ya da toplu teşekkür gönder.</h2>
+          <div id="ev-history"></div>
+        </div>
+      </div>
+
+      <div id="tab-donors" class="tab-section">
+        <div class="card" style="background: #faf9f7">
+          <p style="font-size: 13px; color: var(--muted); margin: 0">
+            ♾️ Bu sekmeden eklenen bağışçılar
+            <b>hiçbir etkinliğe bağlı değildir ve süresiz erişime sahiptir</b> —
+            istediğin zaman, her yayın açıldığında giriş yapabilirler. Belirli
+            bir etkinliğe özel, süreli davet için "📅 Etkinlikler" sekmesindeki
+            katılımcı listesini kullan.
+          </p>
+        </div>
+
+        <div class="card">
+          <h1>Bağışçı Listesi Yükle</h1>
+          <h2>Süresiz erişim — mailli bağışçılar için.</h2>
+
+          <p class="sub-heading">Tek bir bağışçı ekle</p>
+          <div class="row-2">
+            <div>
+              <label class="field-label">Adı soyadı</label>
+              <input type="text" id="single-name" placeholder="Ahmet Yılmaz" />
+            </div>
+            <div>
+              <label class="field-label">E-posta</label>
+              <input
+                type="email"
+                id="single-email"
+                placeholder="ornek@eposta.com"
+              />
+            </div>
+          </div>
+          <button id="single-upload">+ Ekle</button>
+          <div class="msg" id="single-upload-msg"></div>
+
+          <hr class="divider" />
+
+          <p class="sub-heading">Toplu ekle (çoklu yapıştırma)</p>
+          <label class="field-label"
+            >Her satıra bir bağışçı: <code>eposta,isim(opsiyonel)</code></label
+          >
+          <textarea
+            id="csv"
+            placeholder="ornek1@eposta.com,Ahmet Yılmaz&#10;ornek2@eposta.com"
+          ></textarea>
+          <button id="upload">Yükle / Güncelle</button>
+          <div class="msg" id="upload-msg"></div>
+        </div>
+
+        <div class="card">
+          <h1>E-postası Olmayan Bağışçılar</h1>
+          <h2>
+            Süresiz erişim — isim gir, tek bir giriş linki oluşsun. Bağışçıya
+            WhatsApp/SMS ile gönder ya da yanındaysan telefonunda kendin aç.
+            Tıklayınca hiçbir şey yazmadan direkt giriş yapar. Link ilk
+            kullanıldığı cihaza kilitlenir, başka bir cihazda açılmaz — ama
+            <b>süresi hiç dolmaz</b>.
+          </h2>
+          <input
+            type="text"
+            id="manual-name"
+            placeholder="Bağışçının adı soyadı (örn. Sultan Köksal)"
+          />
+          <button id="manual-create">+ Yeni Kullanıcı Oluştur</button>
+          <div class="msg" id="manual-msg"></div>
+
+          <table id="manual-table" style="margin-top: 14px">
+            <thead>
+              <tr>
+                <th>İsim</th>
+                <th>Giriş Linki</th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="manual-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-registered" class="tab-section">
+        <div class="card">
+          <h1>
+            Kayıtlı Bağışçılar (<span id="count">0</span>)
+            <span style="font-size: 13px; color: var(--muted); font-weight: 400"
+              >— ♾️ VIP / süresiz statü</span
+            >
+          </h1>
+          <h2>
+            Sadece "Süresiz Bağışçı Girişi" sekmesinden eklenmiş, süresiz
+            erişime sahip bağışçılar burada listelenir. Belirli bir etkinliğe
+            davet edilenler bu listede görünmez — onları "📅 Etkinlikler"
+            sekmesindeki ilgili etkinliğin "Katılımcılar" listesinden
+            görebilirsin.
+          </h2>
+
+          <input
+            type="text"
+            id="registered-search"
+            placeholder="İsim ya da e-posta ara..."
+            style="margin-bottom: 14px"
+          />
+
+          <table id="table">
+            <thead>
+              <tr>
+                <th>E-posta</th>
+                <th>İsim</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-settings" class="tab-section">
+        <div class="card">
+          <h1>Moderatör Şifresi</h1>
+          <h2 id="mod-status">Kontrol ediliyor...</h2>
+          <input
+            type="password"
+            id="mod-pw"
+            placeholder="Yeni moderatör şifresi (en az 6 karakter)"
+          />
+          <button id="mod-set">Kaydet / Güncelle</button>
+          <div class="msg" id="mod-msg"></div>
+        </div>
+
+        <div class="card">
+          <h1>Grup Bildirim E-postası</h1>
+          <h2>
+            Bir etkinlik planlandığında, o etkinliğe özel grup giriş kodu
+            (kullanıcı adı + kod) otomatik olarak bu adrese gönderilir. Portföy
+            yöneticileri bu kodu, sistemde kayıtlı olmayan başka bağışçılarla
+            paylaşabilir — aynı kod birden fazla kişi tarafından kullanılabilir,
+            her biri girişte kendi adını yazar.
+          </h2>
+          <input
+            type="email"
+            id="group-email"
+            placeholder="ornek@kizilay.org.tr"
+          />
+          <button id="group-email-save">Kaydet</button>
+          <div class="msg" id="group-email-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="event-manage-modal" class="modal-overlay" style="display: none">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h1 id="em-title">Etkinliği Yönet</h1>
+          <button class="modal-close" id="em-close">✕</button>
+        </div>
+        <div class="modal-tabs">
+          <button class="modal-tab active" data-mtab="status">Durum</button>
+          <button class="modal-tab" data-mtab="participants">
+            Katılımcılar
+          </button>
+          <button class="modal-tab" data-mtab="add">Katılımcı Ekle</button>
+          <button class="modal-tab" data-mtab="thanks">Teşekkür</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-panel active" id="em-panel-status">
+            <label class="field-label">Yeni durum</label>
+            <select id="em-status-select">
+              <option value="draft">Taslak</option>
+              <option value="scheduled">Planlandı</option>
+              <option value="postponed">Ertelendi</option>
+              <option value="cancelled">İptal Edildi</option>
+            </select>
+            <p
+              style="font-size: 12px; color: var(--muted); margin: -4px 0 10px"
+            >
+              Taslak → Planlandı yaparsan, katılımcılara ilk kez davet maili
+              gönderilir.
+            </p>
+            <label class="field-label"
+              >Not (opsiyonel, katılımcılara gönderilir)</label
+            >
+            <textarea
+              id="em-status-note"
+              placeholder="Örn. Teknik nedenlerden ötürü ertelenmiştir."
+            ></textarea>
+            <label class="checkbox-row">
+              <input
+                type="checkbox"
+                id="em-status-notify"
+                checked
+                style="width: auto; margin: 0"
+              />
+              Katılımcılara mail ile bildir
+            </label>
+            <button id="em-status-save" style="width: 100%">Kaydet</button>
+
+            <div
+              id="em-group-access-box"
+              style="
+                display: none;
+                margin-top: 16px;
+                padding: 12px 14px;
+                background: #faf9f7;
+                border-radius: 8px;
+                border: 1px solid var(--line);
+              "
+            >
+              <p style="font-size: 12px; color: var(--muted); margin: 0 0 6px">
+                🔑 Bu etkinliğin grup giriş kodu (portföy yöneticilerinin başka
+                bağışçılarla paylaşabileceği):
+              </p>
+              <p style="font-size: 14px; margin: 0">
+                <b>Kullanıcı adı:</b>
+                <span id="em-group-username"></span> &nbsp;·&nbsp; <b>Kod:</b>
+                <span id="em-group-code"></span>
+              </p>
+            </div>
+          </div>
+
+          <div class="modal-panel" id="em-panel-participants">
+            <p style="font-size: 12px; color: var(--muted); margin: 0 0 12px">
+              Bu etkinliğin katılımcı listesi. "Çıkart" sadece bu etkinliğin
+              listesinden çıkarır, siteye genel erişimi etkilemez.
+            </p>
+            <div id="em-participants-list"></div>
+          </div>
+
+          <div class="modal-panel" id="em-panel-add">
+            <label class="field-label">Yeni katılımcının e-postası</label>
+            <input
+              type="email"
+              id="em-add-email"
+              placeholder="ornek@eposta.com"
+            />
+            <label class="field-label">Adı soyadı</label>
+            <input type="text" id="em-add-name" placeholder="Ad Soyad" />
+            <button id="em-add-save" style="width: 100%">
+              Ekle ve Davet Gönder
+            </button>
+          </div>
+
+          <div class="modal-panel" id="em-panel-thanks">
+            <label class="field-label"
+              >Alıcılar — otomatik dolar, istersen düzenle/ekle/çıkar:
+              <code>eposta,isim</code></label
+            >
+            <textarea
+              id="em-thanks-recipients"
+              placeholder="Yükleniyor..."
+              style="min-height: 70px"
+            ></textarea>
+            <label class="field-label"
+              >Mesajınız (mailin tamamı budur; kişiselleştirmek için [isim]
+              yazabilirsiniz)</label
+            >
+            <textarea
+              id="em-thanks-message"
+              placeholder="Değerli [isim],&#10;&#10;Katılımınız için teşekkür ederiz...&#10;&#10;Türk Kızılay"
+              style="min-height: 110px"
+            ></textarea>
+            <label class="field-label">Video linki (opsiyonel)</label>
+            <input type="url" id="em-thanks-video" placeholder="https://..." />
+            <button id="em-thanks-save" style="width: 100%">Gönder</button>
+            <p style="font-size: 12px; color: var(--muted); margin: 14px 0 6px">
+              Önizleme:
+            </p>
+            <div
+              id="em-thanks-preview"
+              class="mail-preview"
+              style="min-height: 50px"
+            >
+              <span style="color: var(--muted)"
+                >Mesaj yazmaya başlayınca burada görünecek...</span
+              >
+            </div>
+          </div>
+
+          <div class="msg" id="em-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="report-modal" class="report-modal" style="display: none">
+      <div class="report-modal-inner">
+        <div class="report-modal-header">
+          <h1 style="margin: 0">📊 Rapor</h1>
+          <div>
+            <button
+              id="report-export-btn"
+              class="secondary"
+              style="margin-right: 8px"
+            >
+              ⬇ CSV İndir
+            </button>
+            <button id="report-close-btn" class="secondary">✕ Kapat</button>
+          </div>
+        </div>
+        <div id="report-body" class="report-body">
+          <p style="color: var(--muted)">Yükleniyor...</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let adminPw = "";
+      let eventsCache = [];
+      let currentManagedEventId = null;
+
+      document.getElementById("login").addEventListener("click", async () => {
+        adminPw = document.getElementById("pw").value;
+        const ok = await loadDonors();
+        if (ok) {
+          document.getElementById("gate-wrap").style.display = "none";
+          document.getElementById("top-bar").style.display = "flex";
+          document.getElementById("panel").style.display = "block";
+        } else {
+          document.getElementById("gate-msg").textContent = "Şifre hatalı.";
+        }
+      });
+
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab-btn")
+            .forEach((b) => b.classList.remove("active"));
+          document
+            .querySelectorAll(".tab-section")
+            .forEach((s) => s.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(btn.dataset.tab).classList.add("active");
+        });
+      });
+
+      async function loadManualAccounts() {
+        const res = await fetch("/api/admin/manual-access", {
+          headers: { "x-admin-password": adminPw },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById("manual-tbody");
+        tbody.innerHTML = "";
+        for (const acc of data.accounts) {
+          const tr = document.createElement("tr");
+          const statusBadge = acc.used
+            ? '<span class="status-badge status-scheduled">Kullanıldı</span>'
+            : '<span class="status-badge status-draft">Bekliyor</span>';
+          tr.innerHTML =
+            "<td>" +
+            (acc.name || "") +
+            " " +
+            statusBadge +
+            "</td>" +
+            '<td><button class="secondary manual-copy" data-link="' +
+            acc.link +
+            '" style="font-size:12px; padding:5px 10px;">🔗 Linki Kopyala</button></td>' +
+            '<td><button class="rm manual-reset" data-username="' +
+            acc.username +
+            '" style="font-size:12px;">Cihazı Sıfırla</button></td>' +
+            '<td><button class="rm manual-rm" data-username="' +
+            acc.username +
+            '">Sil</button></td>';
+          tbody.appendChild(tr);
+        }
+        tbody.querySelectorAll(".manual-copy").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(btn.dataset.link);
+            const original = btn.textContent;
+            btn.textContent = "✓ Kopyalandı";
+            setTimeout(() => {
+              btn.textContent = original;
+            }, 1500);
+          });
+        });
+        tbody.querySelectorAll(".manual-reset").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            if (
+              !confirm(
+                "Bu kişinin cihaz kilidi kaldırılacak, link başka bir cihazda tekrar kullanılabilecek. Emin misin?",
+              )
+            )
+              return;
+            await fetch(
+              "/api/admin/manual-access/" +
+                btn.dataset.username +
+                "/reset-device",
+              {
+                method: "POST",
+                headers: { "x-admin-password": adminPw },
+              },
+            );
+            loadManualAccounts();
+          });
+        });
+        tbody.querySelectorAll(".manual-rm").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await fetch("/api/admin/manual-access/remove", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-admin-password": adminPw,
+              },
+              body: JSON.stringify({ username: btn.dataset.username }),
+            });
+            loadManualAccounts();
+          });
+        });
+      }
+
+      document
+        .getElementById("manual-create")
+        .addEventListener("click", async () => {
+          const name = document.getElementById("manual-name").value.trim();
+          const msg = document.getElementById("manual-msg");
+          msg.textContent = "Oluşturuluyor...";
+          msg.className = "msg";
+          const res = await fetch("/api/admin/manual-access/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-password": adminPw,
+            },
+            body: JSON.stringify({ name }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            msg.className = "msg success";
+            msg.innerHTML =
+              'Oluşturuldu → <a href="' +
+              data.link +
+              '" target="_blank">' +
+              data.link +
+              "</a> (bu linki bağışçıya ilet)";
+            document.getElementById("manual-name").value = "";
+            loadManualAccounts();
+          } else {
+            msg.className = "msg error";
+            msg.textContent = data.error || "Hata oluştu.";
+          }
+        });
+
+      let donorsCache = [];
+
+      function renderDonorsTable() {
+        const search = document
+          .getElementById("registered-search")
+          .value.trim()
+          .toLowerCase();
+
+        let filtered = donorsCache;
+        if (search) {
+          filtered = filtered.filter(
+            (d) =>
+              (d.name || "").toLowerCase().includes(search) ||
+              d.email.toLowerCase().includes(search),
+          );
+        }
+
+        document.getElementById("count").textContent = donorsCache.length;
+        const tbody = document.getElementById("tbody");
+        tbody.innerHTML = "";
+        if (!filtered.length) {
+          tbody.innerHTML =
+            '<tr><td colspan="3" style="color:var(--muted); font-size:13px; text-align:center; padding:16px;">Henüz süresiz bağışçı eklenmemiş.</td></tr>';
+          return;
+        }
+        for (const d of filtered) {
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            "<td>" +
+            escapeHtmlAdmin(d.email) +
+            "</td>" +
+            "<td>" +
+            escapeHtmlAdmin(d.name || "") +
+            "</td>" +
+            '<td><button class="rm" data-email="' +
+            escapeHtmlAdmin(d.email) +
+            '">Sil</button></td>';
+          tbody.appendChild(tr);
+        }
+        tbody.querySelectorAll(".rm").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await fetch("/api/admin/remove", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-admin-password": adminPw,
+              },
+              body: JSON.stringify({ email: btn.dataset.email }),
+            });
+            loadDonors();
+          });
+        });
+      }
+
+      document
+        .getElementById("registered-search")
+        .addEventListener("input", renderDonorsTable);
+
+      async function loadDonors() {
+        const res = await fetch("/api/admin/donors", {
+          headers: { "x-admin-password": adminPw },
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        donorsCache = data.donors;
+        renderDonorsTable();
+        await loadModeratorStatus();
+        await loadGroupEmail();
+        await loadManualAccounts();
+        await loadEvents();
+        return true;
+      }
+
+      async function loadModeratorStatus() {
+        const res = await fetch("/api/admin/moderator-status", {
+          headers: { "x-admin-password": adminPw },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        document.getElementById("mod-status").textContent = data.hasPassword
+          ? "Moderatör şifresi aşağıdan değiştirilebilir."
+          : "Henüz moderatör şifresi belirlenmemiş.";
+      }
+
+      async function loadGroupEmail() {
+        const res = await fetch("/api/admin/settings/group-email", {
+          headers: { "x-admin-password": adminPw },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        document.getElementById("group-email").value = data.email || "";
+      }
+
+      document
+        .getElementById("group-email-save")
+        .addEventListener("click", async () => {
+          const email = document.getElementById("group-email").value.trim();
+          const msg = document.getElementById("group-email-msg");
+          msg.className = "msg";
+          msg.textContent = "Kaydediliyor...";
+          const res = await fetch("/api/admin/settings/group-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-password": adminPw,
+            },
+            body: JSON.stringify({ email }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            msg.className = "msg success";
+            msg.textContent = email
+              ? "Grup bildirim e-postası kaydedildi."
+              : "Grup bildirim e-postası kaldırıldı.";
+          } else {
+            msg.className = "msg error";
+            msg.textContent = data.error || "Hata oluştu.";
+          }
+        });
+
+      document.getElementById("mod-set").addEventListener("click", async () => {
+        const password = document.getElementById("mod-pw").value;
+        const msg = document.getElementById("mod-msg");
+        if (password.length < 6) {
+          msg.className = "msg error";
+          msg.textContent = "Şifre en az 6 karakter olmalı.";
+          return;
+        }
+        const res = await fetch("/api/admin/set-moderator-password", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-password": adminPw,
+          },
+          body: JSON.stringify({ password }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          msg.className = "msg success";
+          msg.textContent = "Moderatör şifresi kaydedildi.";
+          document.getElementById("mod-pw").value = "";
+          loadModeratorStatus();
+        } else {
+          msg.className = "msg error";
+          msg.textContent = data.error || "Hata oluştu.";
+        }
+      });
+
+      document
+        .getElementById("single-upload")
+        .addEventListener("click", async () => {
+          const name = document.getElementById("single-name").value.trim();
+          const email = document.getElementById("single-email").value.trim();
+          const msg = document.getElementById("single-upload-msg");
+          if (!email || !email.includes("@")) {
+            msg.className = "msg error";
+            msg.textContent = "Geçerli bir e-posta girin.";
+            return;
+          }
+          msg.className = "msg";
+          msg.textContent = "Ekleniyor...";
+          const csv = email + "," + name;
+          const res = await fetch("/api/admin/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-password": adminPw,
+            },
+            body: JSON.stringify({ csv }),
+          });
+          const data = await res.json();
+          if (data.ok && data.inserted > 0) {
+            msg.className = "msg success";
+            msg.textContent = (name || email) + " eklendi.";
+            document.getElementById("single-name").value = "";
+            document.getElementById("single-email").value = "";
+            loadDonors();
+          } else {
+            msg.className = "msg error";
+            msg.textContent = data.error || "Eklenemedi, e-postayı kontrol et.";
+          }
+        });
+
+      document.getElementById("upload").addEventListener("click", async () => {
+        const csv = document.getElementById("csv").value;
+        const msg = document.getElementById("upload-msg");
+        msg.textContent = "Yükleniyor...";
+        msg.className = "msg";
+        const res = await fetch("/api/admin/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-password": adminPw,
+          },
+          body: JSON.stringify({ csv }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          msg.className = "msg success";
+          msg.textContent =
+            data.inserted +
+            " kayıt eklendi/güncellendi." +
+            (data.errors.length
+              ? " " + data.errors.length + " satır atlandı."
+              : "");
+          document.getElementById("csv").value = "";
+          loadDonors();
+        } else {
+          msg.className = "msg error";
+          msg.textContent = data.error || "Hata oluştu.";
+        }
+      });
+
+      let evEditMode = false;
+      let evCustomMessagePlain = ""; // anlatım metni — kullanıcı bir kez düzenlemeye başladıysa burada tutulur
+      let evCustomClosingPlain = ""; // kapanış metni — aynı şekilde
+
+      function defaultNarrativeParagraphs(project) {
+        return [
+          "Gerçekleştirmiş olduğunuz kıymetli bağışınızla ihtiyaç sahiplerine umut olan bir iyiliğin hayat bulmasına vesile oldunuz.",
+          `Sizlerin desteğiyle hayata geçirilen ${project} için gerçekleştireceğimiz açılış programında, bu anlamlı ana birlikte tanıklık etmekten büyük mutluluk duyacağız.`,
+          "Bu özel günde, iyiliğin somut bir esere ve kalıcı bir değere dönüşmesine katkı sağlayan siz değerli bağışçımızı da aramızda görmek isteriz.",
+        ];
+      }
+
+      function defaultClosingParagraphs() {
+        return [
+          "İyiliğin büyümesine ve daha fazla insana ulaşmasına sağladığınız değerli katkı için teşekkür ederiz.",
+          "Saygılarımızla,\nTürk Kızılay",
+        ];
+      }
+
+      function escapeHtmlEv(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function renderMailPreview() {
+        const title = document.getElementById("ev-title").value.trim();
+        const project =
+          document.getElementById("ev-project").value.trim() || "[Proje Adı]";
+        const date = document.getElementById("ev-date").value || "[Tarih]";
+        const time = document.getElementById("ev-time").value || "[Saat]";
+        const csv = document.getElementById("ev-csv").value.trim();
+        const firstLine = csv.split(/\r?\n/).find((l) => l.trim());
+        const sampleName = firstLine
+          ? (
+              firstLine.split(",")[1] ||
+              firstLine.split(",")[0] ||
+              "Ad Soyad"
+            ).trim()
+          : "Ad Soyad";
+
+        const previewWrap = document.getElementById("ev-preview-wrap");
+        if (!title && !project && !csv) {
+          previewWrap.style.display = "none";
+          return;
+        }
+        previewWrap.style.display = "block";
+
+        document.getElementById("ev-preview-header").innerHTML = `
+      <p><b>Konu:</b> ${title || "(Etkinlik başlığı)"} - Açılış Programı Davetiniz</p>
+      <hr style="border-color:#e2e0dc;margin:10px 0;">
+      <p>Değerli Bağışçımız ${sampleName},</p>
+    `;
+
+        // ÖNEMLİ: Düzenleme modundayken bu alanlara ASLA innerHTML ile dokunmuyoruz —
+        // kullanıcı yazarken imleç/metin kaybolmasın diye. Sadece düzenleme modunda
+        // DEĞİLKEN (görüntüleme hâli) içeriği güncelliyoruz.
+        const narrativeView = document.getElementById(
+          "ev-preview-narrative-view",
+        );
+        if (!evEditMode) {
+          const paragraphs = evCustomMessagePlain
+            ? evCustomMessagePlain.split(/\n{2,}/)
+            : defaultNarrativeParagraphs(project);
+          narrativeView.innerHTML = paragraphs
+            .map((p) => "<p>" + escapeHtmlEv(p).replace(/\n/g, "<br>") + "</p>")
+            .join("");
+        }
+
+        document.getElementById("ev-preview-info").innerHTML = `
+      <p style="margin-top:24px;"><b>Açılış Programı</b></p>
+      <p>📅 Tarih: ${date}</p>
+      <p>📍 (Canlı yayın linki otomatik eklenecek)</p>
+      <p>⏰ Saat: ${time}</p>
+      <p style="margin-top:10px;"><span style="display:inline-block;background:#c10100;color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;">🗓️ Takvime Ekle</span> <span style="color:var(--muted); font-size:11px;">(her zaman otomatik eklenir)</span></p>
+    `;
+
+        const closingView = document.getElementById("ev-preview-closing");
+        if (!evEditMode) {
+          const paragraphs = evCustomClosingPlain
+            ? evCustomClosingPlain.split(/\n{2,}/)
+            : defaultClosingParagraphs();
+          closingView.innerHTML = paragraphs
+            .map((p) => "<p>" + escapeHtmlEv(p).replace(/\n/g, "<br>") + "</p>")
+            .join("");
+        }
+      }
+      ["ev-title", "ev-project", "ev-date", "ev-time"].forEach((id) => {
+        document
+          .getElementById(id)
+          .addEventListener("input", renderMailPreview);
+      });
+
+      let evParticipants = [];
+      let evNoEmailNames = [];
+
+      function syncEvCsvFromParticipants() {
+        document.getElementById("ev-csv").value = evParticipants
+          .map((p) => p.email + "," + p.name)
+          .join("\n");
+        renderMailPreview();
+      }
+
+      function renderParticipantsList() {
+        const el = document.getElementById("ev-participants-rendered");
+        if (!evParticipants.length && !evNoEmailNames.length) {
+          el.innerHTML =
+            '<p style="color:var(--muted); font-size:12px;">Henüz katılımcı eklenmedi.</p>';
+          return;
+        }
+        const emailRows = evParticipants
+          .map(
+            (p, i) => `
+      <div class="row">
+        <div class="who">${escapeHtmlAdmin(p.name || p.email)} <span class="status-badge status-scheduled">📧 Mail</span><div class="type">${escapeHtmlAdmin(p.email)}</div></div>
+        <div class="actions"><button class="rm ev-p-rm" data-i="${i}">Sil</button></div>
+      </div>
+    `,
+          )
+          .join("");
+        const noEmailRows = evNoEmailNames
+          .map(
+            (name, i) => `
+      <div class="row">
+        <div class="who">${escapeHtmlAdmin(name)} <span class="status-badge status-draft">🔗 Link</span></div>
+        <div class="actions"><button class="rm ev-ne-rm" data-i="${i}">Sil</button></div>
+      </div>
+    `,
+          )
+          .join("");
+        el.innerHTML = emailRows + noEmailRows;
+        el.querySelectorAll(".ev-p-rm").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            evParticipants.splice(Number(btn.dataset.i), 1);
+            renderParticipantsList();
+            syncEvCsvFromParticipants();
+          });
+        });
+        el.querySelectorAll(".ev-ne-rm").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            evNoEmailNames.splice(Number(btn.dataset.i), 1);
+            renderParticipantsList();
+          });
+        });
+      }
+
+      const noEmailCheckbox = document.getElementById(
+        "ev-participant-no-email",
+      );
+      noEmailCheckbox.addEventListener("change", () => {
+        document.getElementById("ev-participant-email-wrap").style.display =
+          noEmailCheckbox.checked ? "none" : "block";
+      });
+
+      document
+        .getElementById("ev-participant-add")
+        .addEventListener("click", () => {
+          const name = document
+            .getElementById("ev-participant-name")
+            .value.trim();
+          const msg = document.getElementById("ev-participant-msg");
+
+          if (noEmailCheckbox.checked) {
+            if (!name) {
+              msg.className = "msg error";
+              msg.textContent = "İsim gerekli.";
+              return;
+            }
+            evNoEmailNames.push(name);
+            document.getElementById("ev-participant-name").value = "";
+            msg.className = "msg success";
+            msg.textContent =
+              name + " listeye eklendi (link otomatik oluşturulacak).";
+            renderParticipantsList();
+            return;
+          }
+
+          const email = document
+            .getElementById("ev-participant-email")
+            .value.trim();
+          if (!email || !email.includes("@")) {
+            msg.className = "msg error";
+            msg.textContent = "Geçerli bir e-posta girin.";
+            return;
+          }
+          if (
+            evParticipants.some(
+              (p) => p.email.toLowerCase() === email.toLowerCase(),
+            )
+          ) {
+            msg.className = "msg error";
+            msg.textContent = "Bu e-posta zaten listede var.";
+            return;
+          }
+
+          evParticipants.push({ email, name: name || email });
+          document.getElementById("ev-participant-name").value = "";
+          document.getElementById("ev-participant-email").value = "";
+          msg.className = "msg success";
+          msg.textContent = (name || email) + " listeye eklendi.";
+
+          renderParticipantsList();
+          syncEvCsvFromParticipants();
+        });
+
+      document
+        .getElementById("ev-csv-bulk-import")
+        .addEventListener("click", () => {
+          const raw = document.getElementById("ev-csv-bulk-paste").value;
+          const lines = raw
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter(Boolean);
+          let added = 0;
+          lines.forEach((line) => {
+            const [rawEmail, rawName] = line.split(",");
+            const email = (rawEmail || "").trim();
+            if (
+              email &&
+              email.includes("@") &&
+              !evParticipants.some(
+                (p) => p.email.toLowerCase() === email.toLowerCase(),
+              )
+            ) {
+              evParticipants.push({
+                email,
+                name: (rawName || "").trim() || email,
+              });
+              added++;
+            }
+          });
+          document.getElementById("ev-csv-bulk-paste").value = "";
+          renderParticipantsList();
+          syncEvCsvFromParticipants();
+        });
+
+      document
+        .getElementById("ev-edit-toggle")
+        .addEventListener("click", () => {
+          const narrativeView = document.getElementById(
+            "ev-preview-narrative-view",
+          );
+          const closingView = document.getElementById("ev-preview-closing");
+          const btn = document.getElementById("ev-edit-toggle");
+
+          if (!evEditMode) {
+            // Düzenlemeye başla: o an EKRANDA GÖRÜNEN metinler (standart ya da daha önce
+            // düzenlenmiş) olduğu gibi kalır, sadece artık üzerine tıklayıp yazabilirsin
+            [narrativeView, closingView].forEach((el) => {
+              el.contentEditable = "true";
+              el.style.outline = "1px dashed var(--accent)";
+              el.style.borderRadius = "6px";
+              el.style.padding = "6px 8px";
+            });
+            narrativeView.focus();
+            evEditMode = true;
+            btn.textContent = "✅ Bitti";
+          } else {
+            // Düzenlemeyi bitir: ekranda ne yazıyorsa onu kaydet
+            const narrativeParagraphs = [
+              ...narrativeView.querySelectorAll("p"),
+            ].map((p) => p.innerText.trim());
+            evCustomMessagePlain =
+              narrativeParagraphs.filter((p) => p).join("\n\n") ||
+              narrativeView.innerText.trim();
+
+            const closingParagraphs = [
+              ...closingView.querySelectorAll("p"),
+            ].map((p) => p.innerText.trim());
+            evCustomClosingPlain =
+              closingParagraphs.filter((p) => p).join("\n\n") ||
+              closingView.innerText.trim();
+
+            [narrativeView, closingView].forEach((el) => {
+              el.contentEditable = "false";
+              el.style.outline = "none";
+              el.style.padding = "0";
+            });
+            evEditMode = false;
+            btn.textContent = "✏️ Düzenle";
+          }
+        });
+
+      function getCurrentPreviewText(elementId) {
+        // Kullanıcı hâlâ düzenleme modundaysa (Bitti'ye basmadan gönder'e bastıysa) bile,
+        // o an ekranda görünen metni yakalar.
+        const el = document.getElementById(elementId);
+        const paragraphs = [...el.querySelectorAll("p")].map((p) =>
+          p.innerText.trim(),
+        );
+        return paragraphs.filter((p) => p).join("\n\n") || el.innerText.trim();
+      }
+
+      async function submitEvent(asDraft) {
+        const title = document.getElementById("ev-title").value.trim();
+        const projectName = document.getElementById("ev-project").value.trim();
+        const eventDate = document.getElementById("ev-date").value;
+        const eventTime = document.getElementById("ev-time").value;
+        const csv = document.getElementById("ev-csv").value;
+        const previewShown =
+          document.getElementById("ev-preview-wrap").style.display !== "none";
+        const customMessage =
+          evCustomMessagePlain ||
+          (previewShown
+            ? getCurrentPreviewText("ev-preview-narrative-view")
+            : "");
+        const customClosing =
+          evCustomClosingPlain ||
+          (previewShown ? getCurrentPreviewText("ev-preview-closing") : "");
+        const msg = document.getElementById("ev-msg");
+
+        if (
+          !title ||
+          !projectName ||
+          !eventDate ||
+          !eventTime ||
+          (!csv.trim() && evNoEmailNames.length === 0)
+        ) {
+          msg.className = "msg error";
+          msg.textContent =
+            "Lütfen tüm alanları doldur ve en az bir katılımcı ekle.";
+          return;
+        }
+        if (
+          !asDraft &&
+          !confirm(
+            "Katılımcı listesindeki herkese davet gönderilecek. Emin misin?",
+          )
+        )
+          return;
+
+        msg.className = "msg";
+        msg.textContent = asDraft
+          ? "Taslak kaydediliyor..."
+          : "Gönderiliyor, bu biraz sürebilir...";
+
+        let data;
+        try {
+          const res = await fetch("/api/admin/events/create-and-send", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-password": adminPw,
+            },
+            body: JSON.stringify({
+              title,
+              projectName,
+              eventDate,
+              eventTime,
+              csv,
+              noEmailNames: evNoEmailNames,
+              asDraft,
+              customMessage,
+              customClosing,
+            }),
+          });
+          if (!res.ok) {
+            msg.className = "msg error";
+            msg.textContent =
+              "Sunucu hatası (durum kodu: " +
+              res.status +
+              "). Lütfen tekrar dene.";
+            return;
+          }
+          data = await res.json();
+        } catch (err) {
+          msg.className = "msg error";
+          msg.textContent =
+            "Bağlantı hatası: " +
+            (err.message || "İnternet bağlantını kontrol edip tekrar dene.");
+          return;
+        }
+
+        if (data.ok) {
+          msg.className = "msg success";
+          msg.textContent = asDraft
+            ? 'Taslak kaydedildi. Mailli katılımcılara henüz mail gönderilmedi — hazır olduğunda "Yönet > Durum" üzerinden Planlandı\'ya çekip gönderebilirsin.'
+            : `${data.sent}/${data.total} mail başarıyla gönderildi.` +
+              (data.failed ? ` ${data.failed} tanesi başarısız oldu.` : "");
+
+          const linksWrap = document.getElementById("ev-manual-links-wrap");
+          if (data.manualLinks && data.manualLinks.length) {
+            document.getElementById("ev-manual-links-list").innerHTML =
+              data.manualLinks
+                .map(
+                  (m) => `
+          <div class="row">
+            <div class="who">${escapeHtmlAdmin(m.name)}</div>
+            <div class="actions"><button class="secondary ev-manual-link-copy" data-link="${m.link}" style="font-size:12px; padding:5px 10px;">🔗 Kopyala</button></div>
+          </div>
+        `,
+                )
+                .join("");
+            linksWrap.style.display = "block";
+            linksWrap
+              .querySelectorAll(".ev-manual-link-copy")
+              .forEach((btn) => {
+                btn.addEventListener("click", async () => {
+                  await navigator.clipboard.writeText(btn.dataset.link);
+                  const original = btn.textContent;
+                  btn.textContent = "✓ Kopyalandı";
+                  setTimeout(() => {
+                    btn.textContent = original;
+                  }, 1500);
+                });
+              });
+          } else {
+            linksWrap.style.display = "none";
+          }
+
+          document.getElementById("ev-title").value = "";
+          document.getElementById("ev-project").value = "";
+          document.getElementById("ev-date").value = "";
+          document.getElementById("ev-time").value = "";
+          document.getElementById("ev-csv").value = "";
+          document.getElementById("ev-participant-name").value = "";
+          document.getElementById("ev-participant-email").value = "";
+          document.getElementById("ev-participant-msg").textContent = "";
+          document.getElementById("ev-participant-no-email").checked = false;
+          document.getElementById("ev-participant-email-wrap").style.display =
+            "block";
+          evParticipants = [];
+          evNoEmailNames = [];
+          renderParticipantsList();
+          evCustomMessagePlain = "";
+          evCustomClosingPlain = "";
+          evEditMode = false;
+          document.getElementById("ev-edit-toggle").textContent = "✏️ Düzenle";
+          document.getElementById("ev-preview-wrap").style.display = "none";
+          loadEvents();
+          loadDonors();
+        } else {
+          msg.className = "msg error";
+          msg.textContent = data.error || "Hata oluştu.";
+        }
+      }
+
+      document
+        .getElementById("ev-send")
+        .addEventListener("click", () => submitEvent(false));
+      document
+        .getElementById("ev-draft")
+        .addEventListener("click", () => submitEvent(true));
+
+      function statusBadge(status) {
+        if (status === "draft")
+          return '<span class="status-badge status-draft">Taslak</span>';
+        if (status === "cancelled")
+          return '<span class="status-badge status-cancelled">İptal Edildi</span>';
+        if (status === "postponed")
+          return '<span class="status-badge status-postponed">Ertelendi</span>';
+        return '<span class="status-badge status-scheduled">Planlandı</span>';
+      }
+
+      async function loadEvents() {
+        const res = await fetch("/api/admin/events", {
+          headers: { "x-admin-password": adminPw },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        eventsCache = data.events;
+        const el = document.getElementById("ev-history");
+        const recentEvents = data.events.slice(0, 3);
+        if (!recentEvents.length) {
+          el.innerHTML =
+            '<p style="color:var(--muted); font-size:13px;">Henüz etkinlik yok.</p>';
+          return;
+        }
+
+        el.innerHTML = recentEvents
+          .map(
+            (ev) => `
+      <div class="ev-row">
+        <div>
+          <div class="ev-title">${ev.title} ${statusBadge(ev.status)}</div>
+          <div class="ev-meta">${ev.project_name} · ${ev.event_date} ${ev.event_time} · ${ev.sentCount}/${ev.totalParticipants} mail gönderildi</div>
+        </div>
+        <button class="secondary" data-manage="${ev.id}">Yönet</button>
+      </div>
+    `,
+          )
+          .join("");
+
+        el.querySelectorAll("[data-manage]").forEach((btn) => {
+          btn.addEventListener("click", () =>
+            openEventManageModal(btn.dataset.manage),
+          );
+        });
+      }
+
+      function openEventManageModal(id) {
+        currentManagedEventId = id;
+        const ev = eventsCache.find((e) => String(e.id) === String(id));
+        document.getElementById("em-title").textContent = ev
+          ? ev.title
+          : "Etkinliği Yönet";
+        document.getElementById("em-msg").textContent = "";
+        document.getElementById("em-msg").className = "msg";
+
+        if (ev)
+          document.getElementById("em-status-select").value =
+            ev.status || "scheduled";
+        document.getElementById("em-status-note").value = "";
+        document.getElementById("em-add-email").value = "";
+        document.getElementById("em-add-name").value = "";
+        document.getElementById("em-thanks-message").value = "";
+        document.getElementById("em-thanks-video").value = "";
+        document.getElementById("em-thanks-recipients").value = "Yükleniyor...";
+        updateThanksPreview();
+
+        switchModalTab("status");
+        document.getElementById("event-manage-modal").style.display = "flex";
+
+        fetch("/api/admin/events/" + id + "/participants", {
+          headers: { "x-admin-password": adminPw },
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            document.getElementById("em-thanks-recipients").value = data.ok
+              ? data.participants
+                  .map((p) => p.email + "," + (p.name || ""))
+                  .join("\n")
+              : "";
+          });
+
+        loadEventParticipantsList(id);
+
+        document.getElementById("em-group-access-box").style.display = "none";
+        fetch("/api/admin/events/" + id + "/group-access", {
+          headers: { "x-admin-password": adminPw },
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.ok && data.access) {
+              document.getElementById("em-group-username").textContent =
+                data.access.username;
+              document.getElementById("em-group-code").textContent =
+                data.access.code;
+              document.getElementById("em-group-access-box").style.display =
+                "block";
+            }
+          });
+      }
+
+      function escapeHtmlAdmin(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      async function loadEventParticipantsList(id) {
+        const listEl = document.getElementById("em-participants-list");
+        listEl.innerHTML =
+          '<p style="color:var(--muted); font-size:13px;">Yükleniyor...</p>';
+        const res = await fetch("/api/admin/events/" + id + "/participants", {
+          headers: { "x-admin-password": adminPw },
+        });
+        const data = await res.json();
+        if (!data.ok || !data.participants.length) {
+          listEl.innerHTML =
+            '<p style="color:var(--muted); font-size:13px;">Bu etkinlikte henüz katılımcı yok.</p>';
+          return;
+        }
+        listEl.innerHTML = data.participants
+          .map(
+            (p) => `
+      <div class="row">
+        <div class="who">${escapeHtmlAdmin(p.name || p.email)}<div class="type">${escapeHtmlAdmin(p.email)}</div></div>
+        <div class="actions"><button class="rm ev-participant-rm" data-email="${escapeHtmlAdmin(p.email)}">Çıkart</button></div>
+      </div>
+    `,
+          )
+          .join("");
+        listEl.querySelectorAll(".ev-participant-rm").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            if (
+              !confirm(
+                btn.dataset.email +
+                  " bu etkinliğin listesinden çıkartılacak. Emin misin?",
+              )
+            )
+              return;
+            await fetch(
+              "/api/admin/events/" +
+                currentManagedEventId +
+                "/participants/remove",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-admin-password": adminPw,
+                },
+                body: JSON.stringify({ email: btn.dataset.email }),
+              },
+            );
+            loadEventParticipantsList(currentManagedEventId);
+            loadEvents();
+          });
+        });
+      }
+
+      function switchModalTab(tab) {
+        document
+          .querySelectorAll(".modal-tab")
+          .forEach((t) => t.classList.toggle("active", t.dataset.mtab === tab));
+        document
+          .querySelectorAll(".modal-panel")
+          .forEach((p) => p.classList.remove("active"));
+        document.getElementById("em-panel-" + tab).classList.add("active");
+      }
+
+      document.querySelectorAll(".modal-tab").forEach((btn) => {
+        btn.addEventListener("click", () => switchModalTab(btn.dataset.mtab));
+      });
+
+      document.getElementById("em-close").addEventListener("click", () => {
+        document.getElementById("event-manage-modal").style.display = "none";
+      });
+      document
+        .getElementById("event-manage-modal")
+        .addEventListener("click", (e) => {
+          if (e.target.id === "event-manage-modal")
+            document.getElementById("event-manage-modal").style.display =
+              "none";
+        });
+
+      document
+        .getElementById("em-status-save")
+        .addEventListener("click", async () => {
+          const status = document.getElementById("em-status-select").value;
+          const note = document.getElementById("em-status-note").value.trim();
+          const notify = document.getElementById("em-status-notify").checked;
+          const msg = document.getElementById("em-msg");
+          msg.className = "msg";
+          msg.textContent = "Kaydediliyor...";
+
+          let data;
+          try {
+            const res = await fetch(
+              "/api/admin/events/" + currentManagedEventId + "/status",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-admin-password": adminPw,
+                },
+                body: JSON.stringify({ status, note, notify }),
+              },
+            );
+            if (!res.ok) {
+              msg.className = "msg error";
+              msg.textContent =
+                "Sunucu hatası (durum kodu: " +
+                res.status +
+                "). Lütfen tekrar dene.";
+              return;
+            }
+            data = await res.json();
+          } catch (err) {
+            msg.className = "msg error";
+            msg.textContent =
+              "Bağlantı hatası: " + (err.message || "tekrar dene.");
+            return;
+          }
+
+          if (data.ok) {
+            msg.className = "msg success";
+            let extra = "";
+            if (data.notified) {
+              extra =
+                data.sentType === "invite"
+                  ? " " + data.notified + " kişiye davet maili gönderildi."
+                  : " " + data.notified + " kişiye bilgilendirme gönderildi.";
+            }
+            msg.textContent = "Durum güncellendi." + extra;
+            loadEvents();
+          } else {
+            msg.className = "msg error";
+            msg.textContent = data.error || "Hata oluştu.";
+          }
+        });
+
+      document
+        .getElementById("em-add-save")
+        .addEventListener("click", async () => {
+          const email = document.getElementById("em-add-email").value.trim();
+          const name = document.getElementById("em-add-name").value.trim();
+          const msg = document.getElementById("em-msg");
+          if (!email) {
+            msg.className = "msg error";
+            msg.textContent = "E-posta gerekli.";
+            return;
+          }
+          msg.className = "msg";
+          msg.textContent = "Ekleniyor ve davet gönderiliyor...";
+          const res = await fetch(
+            "/api/admin/events/" + currentManagedEventId + "/add-participant",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-admin-password": adminPw,
+              },
+              body: JSON.stringify({ email, name }),
+            },
+          );
+          const data = await res.json();
+          if (data.ok) {
+            msg.className = "msg success";
+            msg.textContent = email + " eklendi ve davet gönderildi.";
+            document.getElementById("em-add-email").value = "";
+            document.getElementById("em-add-name").value = "";
+            loadEvents();
+            loadDonors();
+          } else {
+            msg.className = "msg error";
+            msg.textContent = data.error || "Hata oluştu.";
+          }
+        });
+
+      function updateThanksPreview() {
+        const preview = document.getElementById("em-thanks-preview");
+        const message = document.getElementById("em-thanks-message").value;
+        const videoUrl = document
+          .getElementById("em-thanks-video")
+          .value.trim();
+        const recipientsRaw = document.getElementById(
+          "em-thanks-recipients",
+        ).value;
+
+        if (!message.trim()) {
+          preview.innerHTML =
+            '<span style="color:var(--muted);">Mesaj yazmaya başlayınca burada görünecek...</span>';
+          return;
+        }
+        const firstLine = recipientsRaw.split(/\r?\n/).find((l) => l.trim());
+        const sampleName =
+          firstLine && firstLine.split(",")[1]
+            ? firstLine.split(",")[1].trim()
+            : "Ahmet Yılmaz";
+        const personalized = message.replace(
+          /\[[iİıI][sS][iİıI][mM]\]/g,
+          sampleName,
+        );
+        const escaped = personalized
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\n/g, "<br>");
+        let html = "<p>" + escaped + "</p>";
+        if (videoUrl) {
+          html +=
+            '<p style="margin-top:14px;"><span style="display:inline-block;background:#c10100;color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;">🎥 Yayın Kaydını İzle</span></p>';
+        }
+        preview.innerHTML = html;
+      }
+      ["em-thanks-message", "em-thanks-video", "em-thanks-recipients"].forEach(
+        (id) => {
+          document
+            .getElementById(id)
+            .addEventListener("input", updateThanksPreview);
+        },
+      );
+
+      document
+        .getElementById("em-thanks-save")
+        .addEventListener("click", async () => {
+          const recipientsCsv = document
+            .getElementById("em-thanks-recipients")
+            .value.trim();
+          const message = document
+            .getElementById("em-thanks-message")
+            .value.trim();
+          const videoUrl = document
+            .getElementById("em-thanks-video")
+            .value.trim();
+          const msg = document.getElementById("em-msg");
+          if (!recipientsCsv) {
+            msg.className = "msg error";
+            msg.textContent = "En az bir alıcı gerekli.";
+            return;
+          }
+          if (!message) {
+            msg.className = "msg error";
+            msg.textContent = "Mesaj metni gerekli.";
+            return;
+          }
+          if (
+            !confirm("Bu listedeki herkese bu mesaj gönderilecek. Emin misin?")
+          )
+            return;
+          msg.className = "msg";
+          msg.textContent = "Gönderiliyor...";
+          const res = await fetch(
+            "/api/admin/events/" + currentManagedEventId + "/thank-you",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-admin-password": adminPw,
+              },
+              body: JSON.stringify({
+                message,
+                videoUrl: videoUrl || null,
+                recipientsCsv,
+              }),
+            },
+          );
+          const data = await res.json();
+          if (data.ok) {
+            msg.className = "msg success";
+            msg.textContent =
+              data.sent + "/" + data.total + " mail gönderildi.";
+          } else {
+            msg.className = "msg error";
+            msg.textContent = data.error || "Hata oluştu.";
+          }
+        });
+
+      let lastReportData = null;
+
+      function formatBytesDuration(sec) {
+        if (!sec) return "-";
+        const m = Math.floor(sec / 60);
+        const s = Math.round(sec % 60);
+        return m + "dk " + s + "sn";
+      }
+
+      async function openReport() {
+        document.getElementById("report-modal").style.display = "flex";
+        const body = document.getElementById("report-body");
+        body.innerHTML = '<p style="color:var(--muted);">Yükleniyor...</p>';
+
+        const res = await fetch("/api/admin/report", {
+          headers: { "x-admin-password": adminPw },
+        });
+        if (!res.ok) {
+          body.innerHTML = '<p class="msg error">Rapor yüklenemedi.</p>';
+          return;
+        }
+        const data = await res.json();
+        lastReportData = data;
+
+        let html = "";
+
+        if (!data.events.length) {
+          html += '<p style="color:var(--muted);">Henüz etkinlik yok.</p>';
+        } else {
+          data.events.forEach((ev, idx) => {
+            const sentCount = ev.participants.filter((p) => p.mail_sent).length;
+            html += '<div class="report-event">';
+            html +=
+              '<div class="report-event-header" data-toggle="ev-body-' +
+              idx +
+              '">';
+            html += "  <div>";
+            html +=
+              '    <h3 style="display:inline;">' +
+              ev.title +
+              " " +
+              statusBadge(ev.status) +
+              "</h3>";
+            html +=
+              '    <div class="report-meta">' +
+              ev.project_name +
+              " · " +
+              ev.event_date +
+              " " +
+              ev.event_time +
+              " · " +
+              sentCount +
+              "/" +
+              ev.participants.length +
+              " mail gönderildi</div>";
+            html += "  </div>";
+            html += '  <span class="report-caret">▾</span>';
+            html += "</div>";
+            html +=
+              '<div class="report-event-body" id="ev-body-' +
+              idx +
+              '" style="display:none;">';
+            html +=
+              '<table class="report-participants"><thead><tr><th>E-posta</th><th>İsim</th><th>Durum</th><th>İzleme Süresi</th></tr></thead><tbody>';
+            ev.participants.forEach((p) => {
+              const status = p.mail_sent
+                ? '<span class="report-status-ok">Gönderildi</span>'
+                : '<span class="report-status-fail">' +
+                  (p.mail_error ? "Hata" : "Bekliyor") +
+                  "</span>";
+              const watchTime = p.watchSeconds
+                ? formatBytesDuration(p.watchSeconds)
+                : '<span style="color:var(--muted);">İzlemedi</span>';
+              html +=
+                "<tr><td>" +
+                p.email +
+                "</td><td>" +
+                (p.name || "") +
+                "</td><td>" +
+                status +
+                "</td><td>" +
+                watchTime +
+                "</td></tr>";
+            });
+            html += "</tbody></table></div></div>";
+          });
+        }
+
+        const feedbackCount = (data.feedback && data.feedback.count) || 0;
+        html += '<div class="report-section">';
+        html +=
+          '<div class="report-event-header" data-toggle="section-feedback"><h1 style="font-size:16px; margin:0;">⭐ Memnuniyet Anketi (' +
+          feedbackCount +
+          ')</h1><span class="report-caret">▾</span></div>';
+        html +=
+          '<div class="report-event-body" id="section-feedback" style="display:none;">';
+        if (feedbackCount === 0) {
+          html += '<p style="color:var(--muted);">Henüz anket cevabı yok.</p>';
+        } else {
+          const avg = data.feedback.averageRating;
+          html +=
+            '<p style="margin:0 0 12px;">Ortalama puan: <b>' +
+            (avg !== null ? avg.toFixed(1) + " / 5" : "-") +
+            "</b> (" +
+            feedbackCount +
+            " cevap)</p>";
+          data.feedback.entries.forEach((f) => {
+            const date = f.created_at
+              ? new Date(f.created_at * 1000).toLocaleString("tr-TR")
+              : "-";
+            html += '<div class="report-event" style="padding:12px 16px;">';
+            html +=
+              '<div class="report-meta">' +
+              f.email +
+              " · " +
+              date +
+              (f.rating ? " · " + f.rating + "/5 ⭐" : "") +
+              "</div>";
+            if (f.system_feedback)
+              html +=
+                '<p style="margin:4px 0; font-size:13px;"><b>Sistem önerisi:</b> ' +
+                f.system_feedback +
+                "</p>";
+            if (f.personal_feedback)
+              html +=
+                '<p style="margin:4px 0; font-size:13px;"><b>Duygu/düşünce:</b> ' +
+                f.personal_feedback +
+                "</p>";
+            html += "</div>";
+          });
+        }
+        html += "</div></div>";
+
+        const recordingCount = (data.recordings && data.recordings.length) || 0;
+        html += '<div class="report-section">';
+        html +=
+          '<div class="report-event-header" data-toggle="section-recordings"><h1 style="font-size:16px; margin:0;">🎥 Kaydedilen Yayınlar (' +
+          recordingCount +
+          ')</h1><span class="report-caret">▾</span></div>';
+        html +=
+          '<div class="report-event-body" id="section-recordings" style="display:none;">';
+        if (data.recordingsError) {
+          html +=
+            '<p class="msg error" style="margin-top:0;">' +
+            data.recordingsError +
+            "</p>";
+          html +=
+            '<p style="color:var(--muted); font-size:12px;">Bu özelliği kullanmak için CF_ACCOUNT_ID ve CF_STREAM_API_TOKEN secret\'larının eklenmesi gerekiyor.</p>';
+        } else if (recordingCount === 0) {
+          html +=
+            '<p style="color:var(--muted);">Henüz kaydedilmiş bir yayın yok.</p>';
+        } else {
+          data.recordings.forEach((r) => {
+            const date = r.created
+              ? new Date(r.created).toLocaleString("tr-TR")
+              : "-";
+            html += '<div class="report-recording">';
+            html +=
+              "<span>" +
+              date +
+              " · " +
+              formatBytesDuration(r.duration) +
+              "</span>";
+            if (r.downloadUrl) {
+              html +=
+                '<a href="' +
+                r.downloadUrl +
+                '" target="_blank">İndir (' +
+                r.downloadStatus +
+                ")</a>";
+            } else {
+              html +=
+                '<span style="color:var(--muted);">Hazırlanıyor...</span>';
+            }
+            html += "</div>";
+          });
+        }
+        html += "</div></div>";
+
+        body.innerHTML = html;
+
+        body.querySelectorAll(".report-event-header").forEach((header) => {
+          header.addEventListener("click", () => {
+            const targetId = header.dataset.toggle;
+            const target = document.getElementById(targetId);
+            const isOpen = target.style.display !== "none";
+            target.style.display = isOpen ? "none" : "block";
+            header.querySelector(".report-caret").textContent = isOpen
+              ? "▾"
+              : "▴";
+          });
+        });
+      }
+
+      document
+        .getElementById("report-open-btn")
+        .addEventListener("click", openReport);
+      document
+        .getElementById("report-close-btn")
+        .addEventListener("click", () => {
+          document.getElementById("report-modal").style.display = "none";
+        });
+      document.getElementById("report-modal").addEventListener("click", (e) => {
+        if (e.target.id === "report-modal")
+          document.getElementById("report-modal").style.display = "none";
+      });
+
+      document
+        .getElementById("report-export-btn")
+        .addEventListener("click", () => {
+          if (!lastReportData) return;
+          let csv =
+            "Etkinlik,Proje,Tarih,Saat,E-posta,Isim,Mail Durumu,Izleme Suresi\n";
+          lastReportData.events.forEach((ev) => {
+            ev.participants.forEach((p) => {
+              const status = p.mail_sent
+                ? "Gönderildi"
+                : p.mail_error
+                  ? "Hata"
+                  : "Bekliyor";
+              const watchTime = p.watchSeconds
+                ? formatBytesDuration(p.watchSeconds)
+                : "Izlemedi";
+              csv +=
+                [
+                  ev.title,
+                  ev.project_name,
+                  ev.event_date,
+                  ev.event_time,
+                  p.email,
+                  p.name || "",
+                  status,
+                  watchTime,
+                ]
+                  .map((v) => '"' + String(v).replace(/"/g, '""') + '"')
+                  .join(",") + "\n";
+            });
+          });
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download =
+            "rapor-" + new Date().toISOString().split("T")[0] + ".csv";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Türk Kızılay - Giriş</title>
+<style>
+  :root { --accent:#c10100; --card:#ffffff; --text:#111111; --muted:#666666; --line:#e2e0dc; }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; font-family: system-ui, sans-serif; color: var(--text);
+    background-color: #f7f5f1;
+    background-image: url('/background.jpg');
+    background-size: cover; background-position: center; background-attachment: fixed;
+    min-height: 100vh;
+  }
+  .top-band { width: 100%; height: 8px; background: var(--accent); }
+  .wrap { max-width: 440px; margin: 0 auto; padding: 60px 20px; text-align: center; }
+  .logo-badge {
+    width: 84px; height: 84px; border-radius: 10px; background:#fff; border: 1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; margin: 0 auto 16px; overflow:hidden;
+  }
+  .logo-badge img { width: 64px; height: 64px; object-fit: contain; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin: 0 0 28px; }
+  .card {
+    background: var(--card); border-radius: 16px; padding: 36px 32px; width: 100%;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08); text-align: left;
+  }
+  .icon-badge {
+    width: 56px; height: 56px; border-radius: 50%; background: #fdecec; color: var(--accent);
+    display:flex; align-items:center; justify-content:center; margin: 0 auto 16px;
+  }
+  .icon-badge svg { width: 26px; height: 26px; }
+  .card h1 { text-align:center; }
+  .underline { width: 40px; height: 3px; background: var(--accent); margin: 8px auto 20px; border-radius: 2px; }
+  .sub { text-align:center; color: var(--muted); font-size: 14px; margin: 0 0 24px; }
+  button {
+    width: 100%; padding: 13px; border: none; border-radius: 10px; background: var(--accent);
+    color: #fff; font-weight: 600; font-size: 14px; cursor: pointer;
+  }
+  .msg { font-size: 14px; margin-top: 12px; min-height: 20px; text-align:center; }
+  .msg.error { color: var(--accent); }
+  .kvkk-row { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--muted); margin: 16px 0; }
+  .kvkk-row input { width:auto; margin-top:2px; }
+  .kvkk-row a { color: var(--accent); }
+  .state { display:none; }
+  .state.active { display:block; }
+  .error-icon {
+    width: 56px; height: 56px; border-radius: 50%; background: #fdecec; color: var(--accent);
+    display:flex; align-items:center; justify-content:center; margin: 0 auto 16px; font-size: 26px;
+  }
+</style>
+</head>
+<body>
+  <div class="top-band"></div>
+  <div class="wrap">
+    <div class="logo-badge"><img src="/logo.jpg" alt="Türk Kızılay logosu" /></div>
+    <h1>Türk Kızılay</h1>
+    <p class="subtitle">Bağışçı Canlı Yayın Platformu</p>
+
+    <div class="card">
+      <div id="state-loading" class="state active">
+        <p class="sub" style="margin-top:20px;">Kontrol ediliyor...</p>
+      </div>
+
+      <div id="state-login" class="state">
+        <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <h1 id="welcome-name">Hoş Geldiniz</h1>
+        <div class="underline"></div>
+        <p class="sub" id="welcome-event">Canlı yayına katılmak için aşağıdaki onayı verip devam edin.</p>
+
+        <label class="kvkk-row">
+          <input type="checkbox" id="kvkk-check" />
+          <span>
+            <a href="https://www.kizilay.org.tr/Kurumsal/gizlilik-ve-kisisel-verilerin-korunmasi" target="_blank" rel="noopener noreferrer">KVKK metnini</a>
+            okudum, anladım.
+          </span>
+        </label>
+
+        <button id="btn-continue">Devam Et <span>→</span></button>
+        <div class="msg" id="msg-login"></div>
+      </div>
+
+      <div id="state-invalid" class="state">
+        <div class="error-icon">✕</div>
+        <h1 style="text-align:center;">Geçersiz Link</h1>
+        <div class="underline"></div>
+        <p class="sub">Bu link geçerli değil. Lütfen size gönderilen mail'deki linki tekrar kontrol edin ya da yöneticinizle iletişime geçin.</p>
+      </div>
+
+      <div id="state-countdown" class="state">
+        <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h1 style="text-align:center;" id="countdown-event-title">Yayın Henüz Başlamadı</h1>
+        <div class="underline"></div>
+        <p class="sub">Bu link geçerli, ama yayın henüz başlamadı. Aşağıdaki süre dolunca sayfa otomatik olarak giriş ekranına geçecek.</p>
+        <p style="text-align:center; font-size:32px; font-weight:700; color:var(--accent); margin:10px 0 0;" id="countdown-timer">--:--:--</p>
+      </div>
+
+      <div id="state-expired" class="state">
+        <div class="error-icon">⏰</div>
+        <h1 style="text-align:center;">Linkin Süresi Dolmuş</h1>
+        <div class="underline"></div>
+        <p class="sub">Bu davet linkinin süresi dolmuş. Yardım için yöneticinizle iletişime geçin.</p>
+      </div>
+
+      <div id="state-other-device" class="state">
+        <div class="error-icon">📵</div>
+        <h1 style="text-align:center;">Başka Bir Cihazda Kullanılmış</h1>
+        <div class="underline"></div>
+        <p class="sub">Bu link daha önce başka bir cihazda kullanılmış. Yeni bir link almak için lütfen yöneticinizle iletişime geçin.</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function showState(id) {
+    document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('t');
+  let countdownInterval = null;
+
+  function startCountdown(eventStartMs, eventTitle) {
+    document.getElementById('countdown-event-title').textContent = eventTitle
+      ? (eventTitle + ' Henüz Başlamadı')
+      : 'Yayın Henüz Başlamadı';
+    showState('state-countdown');
+
+    function tick() {
+      const remaining = eventStartMs - Date.now();
+      if (remaining <= 0) {
+        clearInterval(countdownInterval);
+        checkStatus(); // süre doldu, giriş ekranını görmek için yeniden kontrol et
+        return;
+      }
+      const totalSeconds = Math.floor(remaining / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      const pad = (n) => String(n).padStart(2, '0');
+      document.getElementById('countdown-timer').textContent =
+        (days > 0 ? days + ' gün ' : '') + pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
+    }
+    tick();
+    countdownInterval = setInterval(tick, 1000);
+  }
+
+  async function checkStatus() {
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    if (!token) { showState('state-invalid'); return; }
+
+    const res = await fetch('/api/event-login/check?token=' + encodeURIComponent(token));
+    const data = await res.json();
+
+    if (!data.ok || data.status === 'invalid') {
+      showState('state-invalid');
+      return;
+    }
+    if (data.status === 'expired') {
+      showState('state-expired');
+      return;
+    }
+    if (data.status === 'countdown') {
+      startCountdown(data.eventStartMs, data.eventTitle);
+      return;
+    }
+    if (data.status === 'bound-other-device') {
+      showState('state-other-device');
+      return;
+    }
+    document.getElementById('welcome-name').textContent = data.name ? ('Hoş Geldiniz, ' + data.name) : 'Hoş Geldiniz';
+    if (data.eventTitle) {
+      document.getElementById('welcome-event').textContent = data.eventTitle + ' canlı yayınına katılmak için aşağıdaki onayı verip devam edin.';
+    }
+    showState('state-login');
+  }
+
+  checkStatus();
+
+  document.getElementById('btn-continue').addEventListener('click', async () => {
+    const msg = document.getElementById('msg-login');
+    if (!document.getElementById('kvkk-check').checked) {
+      msg.className = 'msg error';
+      msg.textContent = 'Devam etmek için KVKK metnini onaylamanız gerekiyor.';
+      return;
+    }
+    msg.className = 'msg';
+    msg.textContent = 'Giriş yapılıyor...';
+
+    const res = await fetch('/api/event-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, kvkkAccepted: true })
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      window.location.href = '/watch.html';
+    } else {
+      msg.className = 'msg error';
+      msg.textContent = data.error || 'Giriş başarısız.';
+    }
+  });
+</script>
+</body>
+</html>

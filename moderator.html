@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moderatör Paneli</title>
+    <style>
+      :root {
+        --bg: #f5f4f2;
+        --card: #ffffff;
+        --accent: #c10100;
+        --text: #111111;
+        --muted: #666666;
+        --error: #c10100;
+        --ok: #157347;
+        --line: #e2e0dc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, sans-serif;
+      }
+      .page-wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 100px 20px 60px;
+      }
+      .card {
+        background: var(--card);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+        border: 1px solid var(--line);
+      }
+      h1 {
+        font-size: 19px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 14px;
+        color: var(--muted);
+        font-weight: 400;
+        margin: 0 0 16px;
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        background: var(--accent);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      button.deny {
+        background: #eee;
+        color: var(--text);
+      }
+      button.revoke {
+        background: var(--error);
+      }
+      button.secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--line);
+      }
+      .msg {
+        margin-top: 10px;
+        font-size: 13px;
+      }
+      .msg.error {
+        color: var(--error);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+        gap: 10px;
+      }
+      .row:last-child {
+        border-bottom: none;
+      }
+      .who {
+        font-size: 14px;
+      }
+      .who .type {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .empty {
+        color: var(--muted);
+        font-size: 13px;
+        padding: 10px 0;
+        text-align: center;
+      }
+
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 20;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .top-bar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .top-bar-brand img {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+      }
+      .top-bar-brand span {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .tabs {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .tab-btn {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .tab-btn.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .tab-count {
+        background: rgba(0, 0, 0, 0.12);
+        color: inherit;
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: 10px;
+      }
+      .tab-btn.active .tab-count {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .tab-section {
+        display: none;
+      }
+      .tab-section.active {
+        display: block;
+      }
+
+      #gate {
+        max-width: 360px;
+        margin: 100px auto 0;
+      }
+      .brand-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        margin: 0 auto 24px;
+      }
+      .brand-block .logo-badge {
+        width: 64px;
+        height: 64px;
+        border-radius: 10px;
+        background: #fff;
+        border: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .brand-block .logo-badge img {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+      }
+      .brand-block .org {
+        margin: 8px 0 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      /* Ekran kaydı — daha şık tasarım */
+      .rec-hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 30px 20px 24px;
+        border-radius: 14px;
+        background: #faf9f7;
+        border: 1px solid var(--line);
+        margin-bottom: 18px;
+      }
+      .rec-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #fdecec;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 14px;
+      }
+      .rec-icon.live {
+        background: var(--accent);
+        color: #fff;
+        animation: pulse 1.6s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(193, 1, 0, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 14px rgba(193, 1, 0, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(193, 1, 0, 0);
+        }
+      }
+      .rec-status {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .rec-timer {
+        font-size: 28px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--accent);
+        margin: 6px 0 16px;
+      }
+      .rec-desc {
+        font-size: 13px;
+        color: var(--muted);
+        max-width: 380px;
+        margin: 0 0 20px;
+        line-height: 1.5;
+      }
+      .rec-btn-row {
+        display: flex;
+        gap: 10px;
+      }
+      .rec-btn-row button {
+        padding: 12px 24px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gate-wrap" class="page-wrap" style="padding-top: 40px">
+      <div class="brand-block">
+        <div class="logo-badge">
+          <img src="/logo.jpg" alt="Türk Kızılay logosu" />
+        </div>
+        <p class="org">Türk Kızılay</p>
+      </div>
+      <div id="gate" class="card">
+        <h1>Moderatör Girişi</h1>
+        <input type="password" id="pw" placeholder="Moderatör şifresi" />
+        <button id="login" style="width: 100%">Giriş</button>
+        <div class="msg error" id="gate-msg"></div>
+      </div>
+    </div>
+
+    <div id="top-bar" class="top-bar" style="display: none">
+      <div class="top-bar-brand">
+        <img src="/logo.jpg" alt="Türk Kızılay logosu" />
+        <span>Türk Kızılay Moderatör</span>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-requests">
+          📋 İstekler <span class="tab-count" id="count-pending">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-viewers">
+          👥 İzleyiciler <span class="tab-count" id="count-viewers">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-chat">
+          💬 Sohbet <span class="tab-count" id="count-chat">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-recording">⏺ Ekran Kaydı</button>
+      </div>
+    </div>
+
+    <div id="panel" class="page-wrap" style="display: none">
+      <div id="tab-requests" class="tab-section active">
+        <div class="card">
+          <h1>Bekleyen İstekler</h1>
+          <div id="pending-list"></div>
+        </div>
+
+        <div class="card">
+          <h1>Aktif Yayında Olanlar</h1>
+          <div id="active-list"></div>
+        </div>
+      </div>
+
+      <div id="tab-viewers" class="tab-section">
+        <div class="card">
+          <h1>Bağlı İzleyiciler</h1>
+          <h2>
+            Sisteme yetkisiz erişmeye çalıştığından şüphelendiğin ya da
+            tanımadığın birini buradan çıkartabilirsin. Çıkartılan kişi yayından
+            anında atılır ve tekrar girmek için yeniden kimlik doğrulaması (OTP
+            ya da kullanıcı adı+kod) yapması gerekir.
+          </h2>
+          <div id="viewers-list"></div>
+        </div>
+      </div>
+
+      <div id="tab-chat" class="tab-section">
+        <div class="card">
+          <h1>Sohbet Mesajları</h1>
+          <h2>
+            Uygunsuz bir mesajı "Kaldır" dediğinde, canlı yayının sohbetinden
+            herkes için anında silinir.
+          </h2>
+          <div id="chat-list"></div>
+        </div>
+      </div>
+
+      <div id="tab-recording" class="tab-section">
+        <div class="card">
+          <h1>Ekran Kaydı</h1>
+          <h2>
+            Bağışçıların anlık tepkilerini/heyecanını kaydet. Kayıt bittiğinde
+            dosya bilgisayarına otomatik iner.
+          </h2>
+
+          <div class="rec-hero">
+            <div class="rec-icon" id="rec-icon">⏺</div>
+            <div class="rec-status" id="rec-status">Kayıt bekleniyor</div>
+            <div class="rec-timer" id="rec-timer" style="display: none">
+              00:00
+            </div>
+            <p class="rec-desc">
+              Başlat dediğinde tarayıcı hangi ekranı/sekmeyi paylaşmak
+              istediğinizi soracaktır. Bu sayfayı (yayın + katılımcı kutucukları)
+              paylaşmanız önerilir.
+            </p>
+            <div class="rec-btn-row">
+              <button id="rec-start">⏺ Kaydı Başlat</button>
+              <button id="rec-stop" class="revoke" style="display: none">
+                ⏹ Durdur ve İndir
+              </button>
+            </div>
+          </div>
+          <div class="msg" id="rec-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let ws = null;
+      let mediaRecorder = null;
+      let recordedChunks = [];
+      let recordTimerInterval = null;
+      let recordStartTime = null;
+
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab-btn")
+            .forEach((b) => b.classList.remove("active"));
+          document
+            .querySelectorAll(".tab-section")
+            .forEach((s) => s.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(btn.dataset.tab).classList.add("active");
+        });
+      });
+
+      function formatElapsed(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const min = String(Math.floor(totalSec / 60)).padStart(2, "0");
+        const sec = String(totalSec % 60).padStart(2, "0");
+        return min + ":" + sec;
+      }
+
+      document
+        .getElementById("rec-start")
+        .addEventListener("click", async () => {
+          const msg = document.getElementById("rec-msg");
+          try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { frameRate: 30 },
+              audio: true,
+            });
+
+            recordedChunks = [];
+            // ÖNEMLİ: VP9 kodeği, Chrome'da özellikle pencere paylaşımlı ekran
+            // kayıtlarında "sadece anahtar kare/fotoğraf gibi" oynayan bozuk video
+            // üretebiliyor (bilinen bir tarayıcı sorunu). VP8 bu senaryoda çok daha
+            // güvenilir, o yüzden ona öncelik veriyoruz.
+            const mimeType = MediaRecorder.isTypeSupported(
+              "video/webm;codecs=vp8,opus",
+            )
+              ? "video/webm;codecs=vp8,opus"
+              : MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
+                ? "video/webm;codecs=vp9,opus"
+                : "video/webm";
+            mediaRecorder = new MediaRecorder(stream, {
+              mimeType,
+              videoBitsPerSecond: 2_500_000, // 2.5 Mbps — akıcı, net bir kayıt için yeterli
+            });
+
+            mediaRecorder.ondataavailable = (e) => {
+              if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+              const blob = new Blob(recordedChunks, { type: "video/webm" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              const ts = new Date().toISOString().replace(/[:.]/g, "-");
+              a.href = url;
+              a.download = "ekran-kaydi-" + ts + ".webm";
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+              msg.className = "msg";
+              msg.textContent = "Kayıt indirildi.";
+            };
+
+            stream.getVideoTracks()[0].addEventListener("ended", () => {
+              if (mediaRecorder && mediaRecorder.state !== "inactive")
+                mediaRecorder.stop();
+              stopUI();
+            });
+
+            // ÖNEMLİ: start() parametresiz çağrılırsa, veri sadece kayıt BİTTİĞİNDE
+            // tek seferde alınır — Chrome tabanlı tarayıcılarda bu, özellikle uzun
+            // kayıtlarda "seyrek kare/fotoğraf gibi" oynayan bozuk bir video üretebiliyor.
+            // Her 1 saniyede bir veri parçası istemek bu sorunu çözüyor.
+            mediaRecorder.start(1000);
+            recordStartTime = Date.now();
+            startUI();
+            msg.className = "msg";
+            msg.textContent = "";
+          } catch (err) {
+            msg.className = "msg error";
+            msg.textContent =
+              "Kayıt başlatılamadı: " + (err.message || "izin verilmedi.");
+          }
+        });
+
+      function startUI() {
+        document.getElementById("rec-start").style.display = "none";
+        document.getElementById("rec-stop").style.display = "inline-block";
+        document.getElementById("rec-timer").style.display = "block";
+        document.getElementById("rec-icon").classList.add("live");
+        document.getElementById("rec-icon").textContent = "⏺";
+        document.getElementById("rec-status").textContent = "Kayıt sürüyor";
+        recordTimerInterval = setInterval(() => {
+          document.getElementById("rec-timer").textContent = formatElapsed(
+            Date.now() - recordStartTime,
+          );
+        }, 1000);
+      }
+
+      function stopUI() {
+        document.getElementById("rec-start").style.display = "inline-block";
+        document.getElementById("rec-stop").style.display = "none";
+        document.getElementById("rec-timer").style.display = "none";
+        document.getElementById("rec-icon").classList.remove("live");
+        document.getElementById("rec-status").textContent = "Kayıt bekleniyor";
+        clearInterval(recordTimerInterval);
+      }
+
+      document.getElementById("rec-stop").addEventListener("click", () => {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stream.getTracks().forEach((t) => t.stop());
+          mediaRecorder.stop();
+        }
+        stopUI();
+      });
+
+      document.getElementById("login").addEventListener("click", async () => {
+        const password = document.getElementById("pw").value;
+        const res = await fetch("/api/moderator/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById("gate-wrap").style.display = "none";
+          document.getElementById("top-bar").style.display = "flex";
+          document.getElementById("panel").style.display = "block";
+          connectWS();
+        } else {
+          document.getElementById("gate-msg").textContent =
+            data.error || "Giriş başarısız.";
+        }
+      });
+
+      function typeLabel(t) {
+        return t === "mic" ? "🎤 Mikrofon" : "📷 Kamera";
+      }
+
+      function escapeHtmlMod(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function render(state) {
+        const pendingEl = document.getElementById("pending-list");
+        pendingEl.innerHTML = "";
+        if (state.pending.length === 0) {
+          pendingEl.innerHTML = '<div class="empty">Bekleyen istek yok.</div>';
+        }
+        state.pending.forEach((p) => {
+          const row = document.createElement("div");
+          row.className = "row";
+          row.innerHTML =
+            '<div class="who">' +
+            escapeHtmlMod(p.name) +
+            '<div class="type">' +
+            typeLabel(p.type) +
+            "</div></div>" +
+            '<div class="actions">' +
+            '<button class="approve">Onayla</button>' +
+            '<button class="deny">Reddet</button>' +
+            "</div>";
+          row.querySelector(".approve").addEventListener("click", () => {
+            ws.send(
+              JSON.stringify({
+                type: "approve",
+                email: p.email,
+                reqType: p.type,
+              }),
+            );
+          });
+          row.querySelector(".deny").addEventListener("click", () => {
+            ws.send(
+              JSON.stringify({ type: "deny", email: p.email, reqType: p.type }),
+            );
+          });
+          pendingEl.appendChild(row);
+        });
+
+        const activeEl = document.getElementById("active-list");
+        activeEl.innerHTML = "";
+        if (state.active.length === 0) {
+          activeEl.innerHTML =
+            '<div class="empty">Şu an kimse yayında değil.</div>';
+        }
+        state.active.forEach((a) => {
+          const row = document.createElement("div");
+          row.className = "row";
+          row.innerHTML =
+            '<div class="who">' +
+            escapeHtmlMod(a.name) +
+            '<div class="type">' +
+            typeLabel(a.type) +
+            "</div></div>" +
+            '<div class="actions"><button class="revoke">Kapat</button></div>';
+          row.querySelector(".revoke").addEventListener("click", () => {
+            ws.send(
+              JSON.stringify({
+                type: "revoke",
+                email: a.email,
+                reqType: a.type,
+              }),
+            );
+          });
+          activeEl.appendChild(row);
+        });
+
+        document.getElementById("count-pending").textContent =
+          state.pending.length;
+
+        const chatEl = document.getElementById("chat-list");
+        chatEl.innerHTML = "";
+        const chat = state.chat || [];
+        if (chat.length === 0) {
+          chatEl.innerHTML = '<div class="empty">Henüz mesaj yok.</div>';
+        }
+        chat.forEach((m) => {
+          const row = document.createElement("div");
+          row.className = "row";
+          const time = new Date(m.ts).toLocaleTimeString("tr-TR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          row.innerHTML =
+            '<div class="who">' +
+            escapeHtmlMod(m.name) +
+            '<div class="type">' +
+            escapeHtmlMod(m.text) +
+            " · " +
+            time +
+            "</div></div>" +
+            '<div class="actions"><button class="revoke">Kaldır</button></div>';
+          row.querySelector(".revoke").addEventListener("click", () => {
+            ws.send(JSON.stringify({ type: "chat-remove", id: m.id }));
+          });
+          chatEl.appendChild(row);
+        });
+        document.getElementById("count-chat").textContent = chat.length;
+
+        const viewersEl = document.getElementById("viewers-list");
+        viewersEl.innerHTML = "";
+        const viewers = state.viewers || [];
+        if (viewers.length === 0) {
+          viewersEl.innerHTML =
+            '<div class="empty">Şu an bağlı izleyici yok.</div>';
+        }
+        viewers.forEach((v) => {
+          const row = document.createElement("div");
+          row.className = "row";
+          row.innerHTML =
+            '<div class="who">' +
+            escapeHtmlMod(v.name) +
+            '<div class="type">' +
+            escapeHtmlMod(v.email) +
+            "</div></div>" +
+            '<div class="actions"><button class="revoke">Çıkart</button></div>';
+          row.querySelector(".revoke").addEventListener("click", () => {
+            if (
+              !confirm(
+                v.name +
+                  " yayından çıkartılacak ve oturumu iptal edilecek. Emin misin?",
+              )
+            )
+              return;
+            ws.send(JSON.stringify({ type: "kick", email: v.email }));
+          });
+          viewersEl.appendChild(row);
+        });
+        document.getElementById("count-viewers").textContent = viewers.length;
+      }
+
+      function connectWS() {
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        ws = new WebSocket(
+          proto + "//" + location.host + "/api/room/ws?role=moderator",
+        );
+        ws.onmessage = (event) => {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "state") render(msg.state);
+        };
+        ws.onclose = () => setTimeout(connectWS, 3000);
+      }
+
+      (async () => {
+        const res = await fetch("/api/moderator/me");
+        if (res.ok) {
+          document.getElementById("gate-wrap").style.display = "none";
+          document.getElementById("top-bar").style.display = "flex";
+          document.getElementById("panel").style.display = "block";
+          connectWS();
+        }
+      })();
+    </script>
+  </body>
+</html>

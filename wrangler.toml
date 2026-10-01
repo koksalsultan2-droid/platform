@@ -8,7 +8,7 @@ compatibility_date = "2026-08-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "donor-stream-db"
-database_id = "database ıd^niz"
+database_id = "74e720ea-5ce4-4fe8-a382-1cd3f92d597a"
 
 # Statik dosyaları (login, watch, admin sayfaları) servis etmek için
 [assets]

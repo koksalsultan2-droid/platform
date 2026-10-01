@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canlı Yayın</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --text: #111111;
+        --muted: #666666;
+        --kizilay-red: #c10100;
+        --line: #111111;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, sans-serif;
+      }
+      .brand-header {
+        background: var(--kizilay-red);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 32px;
+      }
+      .brand-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .logo-badge {
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+      .logo-badge img {
+        width: 46px;
+        height: 46px;
+        object-fit: contain;
+      }
+      .brand-titles p {
+        margin: 0;
+      }
+      .brand-titles .org {
+        font-size: 18px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .brand-titles .sub {
+        font-size: 13px;
+        color: #f6c9cb;
+      }
+      .brand-header button {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+      .brand-header button:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .stream-row {
+        display: flex;
+        gap: 16px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .main-col {
+        flex: 1;
+        min-width: 280px;
+      }
+      .side-col {
+        width: 220px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        transition: height 0.25s ease;
+      }
+      .aspect {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #000;
+        border: 1px solid var(--line);
+      }
+      .aspect iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      .loading,
+      .error {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+      }
+      .req-bar {
+        display: flex;
+        gap: 10px;
+        margin: 14px 0 6px;
+        flex-wrap: wrap;
+      }
+      .req-btn {
+        background: #fff;
+        border: 1px solid var(--line);
+        color: var(--text);
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .req-btn.pending {
+        background: #fff8e1;
+        border-color: #b8860b;
+        color: #8a6300;
+      }
+      .req-btn.live {
+        background: var(--kizilay-red);
+        border-color: var(--kizilay-red);
+        color: #fff;
+      }
+      .participants {
+        display: grid;
+        gap: 10px;
+        flex: 1;
+        grid-auto-rows: 1fr;
+      }
+      .participants:empty {
+        display: none;
+      }
+      .tile {
+        width: 100%;
+        height: 100%;
+        min-height: 70px;
+        background: #000;
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid var(--line);
+      }
+      .tile video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+      }
+      .tile video.active {
+        display: block;
+      }
+      .tile .placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 28px;
+      }
+      .tile .placeholder.hidden {
+        display: none;
+      }
+      .tile .mic-badge {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--kizilay-red);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+      .tile .mic-badge.active {
+        display: flex;
+      }
+      .tile .label {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.6);
+        font-size: 11px;
+        padding: 3px 6px;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .req-note {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      @media (max-width: 720px) {
+        .side-col {
+          width: 100%;
+        }
+        .participants {
+          grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+          grid-auto-rows: 90px;
+        }
+      }
+
+      .feedback-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .feedback-modal-inner {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px;
+        width: 100%;
+        max-width: 440px;
+        border: 1px solid var(--line);
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+      }
+      .star-rating {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+      .star-rating .star {
+        font-size: 32px;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.1s;
+      }
+      .star-rating .star.active {
+        color: var(--kizilay-red);
+      }
+      .field-label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin: 14px 0 4px;
+      }
+      .feedback-modal-inner textarea {
+        width: 100%;
+        min-height: 70px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        font-family: inherit;
+        font-size: 13px;
+        resize: vertical;
+        color: var(--text);
+      }
+      .feedback-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .feedback-skip-btn,
+      .feedback-submit-btn {
+        flex: 1;
+        padding: 11px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+      }
+      .feedback-skip-btn {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--text);
+      }
+      .feedback-submit-btn {
+        background: var(--kizilay-red);
+        color: #fff;
+      }
+
+      .chat-panel {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 150;
+        width: 320px;
+        max-width: calc(100vw - 40px);
+        height: 420px;
+        max-height: calc(100vh - 40px);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+      }
+      .chat-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        background: var(--kizilay-red);
+        color: #fff;
+        flex-shrink: 0;
+      }
+      .chat-panel-header span {
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .chat-panel-close {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0 4px;
+      }
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .chat-msg {
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .chat-msg .chat-msg-name {
+        font-weight: 600;
+        color: var(--kizilay-red);
+        margin-right: 4px;
+      }
+      .chat-msg .chat-msg-text {
+        word-break: break-word;
+      }
+      .chat-empty {
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+        margin-top: 20px;
+      }
+      .chat-input-row {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px;
+        border-top: 1px solid var(--line);
+        flex-shrink: 0;
+      }
+      .chat-input-row input {
+        flex: 1;
+        padding: 9px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        font-size: 13px;
+      }
+      .chat-input-row button {
+        background: var(--kizilay-red);
+        color: #fff;
+        border: none;
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      @media (max-width: 520px) {
+        .chat-panel {
+          right: 0;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          max-width: 100%;
+          height: 60vh;
+          max-height: 60vh;
+          border-radius: 14px 14px 0 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="brand-header">
+      <div class="brand-left">
+        <div class="logo-badge">
+          <img src="/logo.jpg" alt="Türk Kızılay logosu" />
+        </div>
+        <div class="brand-titles">
+          <p class="org">Türk Kızılay</p>
+          <p class="sub">Bağışçı Canlı Yayın Platformu</p>
+        </div>
+      </div>
+      <button id="logout">Çıkış Yap</button>
+    </div>
+    <div class="stream-row" style="margin-top: 24px">
+      <div class="main-col">
+        <div id="loading" class="loading">Yükleniyor...</div>
+        <div id="player" class="aspect" style="display: none"></div>
+        <div id="error" class="error" style="display: none">
+          Oturumunuz bulunamadı, lütfen tekrar giriş yapın.
+        </div>
+
+        <div class="req-bar" id="req-bar" style="display: none">
+          <button class="req-btn" id="btn-mic">🎤 Mikrofon İste</button>
+          <button class="req-btn" id="btn-camera">📷 Kamera İste</button>
+          <button class="req-btn" id="btn-chat-toggle">💬 Sohbet</button>
+        </div>
+        <div class="req-note" id="req-note"></div>
+
+        <div id="chat-panel" class="chat-panel" style="display: none">
+          <div class="chat-panel-header">
+            <span>💬 Canlı Sohbet</span>
+            <button class="chat-panel-close" id="chat-panel-close">✕</button>
+          </div>
+          <div class="chat-messages" id="chat-messages"></div>
+          <div
+            id="chat-warning"
+            style="
+              display: none;
+              color: #d33;
+              font-size: 12px;
+              padding: 4px 10px;
+            "
+          ></div>
+          <div class="chat-input-row">
+            <input
+              type="text"
+              id="chat-input"
+              placeholder="Bir mesaj yaz..."
+              maxlength="500"
+            />
+            <button id="chat-send-btn">Gönder</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-col" id="side-col">
+        <div class="participants" id="participants"></div>
+      </div>
+    </div>
+
+    <div id="feedback-modal" class="feedback-modal" style="display: none">
+      <div class="feedback-modal-inner">
+        <button
+          id="feedback-close"
+          aria-label="Kapat"
+          style="
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            line-height: 1;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px;
+          "
+        >
+          ✕
+        </button>
+        <h2 style="margin: 0 0 4px; font-size: 18px">
+          Yayın deneyiminizi nasıl buldunuz?
+        </h2>
+        <p style="margin: 0 0 16px; color: var(--muted); font-size: 13px">
+          Görüşleriniz bizim için değerli.
+        </p>
+
+        <div id="star-rating" class="star-rating">
+          <span class="star" data-value="1">★</span>
+          <span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span>
+          <span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+        </div>
+
+        <label class="field-label"
+          >Sistem ile ilgili görüş ve önerileriniz</label
+        >
+        <textarea
+          id="system-feedback"
+          placeholder="Varsa görüş ve önerilerinizi yazabilirsiniz..."
+        ></textarea>
+
+        <label class="field-label"
+          >Yayın ve faaliyetlerimiz hakkında duygu ve düşüncelerinizi bizimle
+          paylaşmak ister misiniz?</label
+        >
+        <textarea
+          id="personal-feedback"
+          placeholder="Bu anı bizimle paylaşmak isterseniz..."
+        ></textarea>
+
+        <div class="feedback-actions">
+          <button id="feedback-skip" class="feedback-skip-btn">
+            Geç, sadece çıkış yap
+          </button>
+          <button id="feedback-submit" class="feedback-submit-btn">
+            Gönder
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let myEmail = null;
+      let ws = null;
+      let publishPCs = {}; // reqType -> RTCPeerConnection (kendi yayınım)
+      let viewerPC = null;
+      let viewerSessionId = null;
+      let subscribedTrackKeys = new Set(); // "email:type" şeklinde
+      let myRequestStatus = {}; // reqType -> 'idle' | 'pending' | 'live'
+
+      function syncSideHeight() {
+        const aspect = document.getElementById("player");
+        const sideCol = document.getElementById("side-col");
+        if (aspect && aspect.offsetHeight > 0) {
+          sideCol.style.height = aspect.offsetHeight + "px";
+        }
+      }
+      window.addEventListener("resize", syncSideHeight);
+
+      // ---------- Kişi başına TEK kutu (tile) yönetimi ----------
+      // Aynı kişinin mikrofonu ve kamerası aynı anda açık olsa bile,
+      // görüntü kutusunun üzerinde küçük bir mikrofon rozeti gösteriyoruz —
+      // ayrı bir "sadece ses" kutusu OLUŞTURMUYORUZ.
+
+      function tileIdFor(key) {
+        return "tile-" + key.replace(/[^a-zA-Z0-9]/g, "_");
+      }
+
+      function getOrCreateTile(key, label, prepend) {
+        let el = document.getElementById(tileIdFor(key));
+        if (el) return el;
+        el = document.createElement("div");
+        el.className = "tile";
+        el.id = tileIdFor(key);
+        el.innerHTML =
+          '<video class="tile-video"></video>' +
+          '<div class="placeholder">👤</div>' +
+          '<div class="mic-badge">🎤</div>' +
+          '<div class="label">' +
+          label +
+          "</div>";
+        const container = document.getElementById("participants");
+        if (prepend) container.prepend(el);
+        else container.appendChild(el);
+        setTimeout(syncSideHeight, 50);
+        return el;
+      }
+
+      function setTileVideo(key, label, streamOrTrack, mirror) {
+        const el = getOrCreateTile(key, label, key === "__self__");
+        const video = el.querySelector(".tile-video");
+        const placeholder = el.querySelector(".placeholder");
+        video.srcObject =
+          streamOrTrack instanceof MediaStream
+            ? streamOrTrack
+            : new MediaStream([streamOrTrack]);
+        video.autoplay = true;
+        video.playsInline = true;
+        video.muted = key === "__self__";
+        video.style.transform = mirror ? "scaleX(-1)" : "none";
+        video.classList.add("active");
+        placeholder.classList.add("hidden");
+      }
+
+      function clearTileVideo(key) {
+        const el = document.getElementById(tileIdFor(key));
+        if (!el) return;
+        const video = el.querySelector(".tile-video");
+        video.classList.remove("active");
+        video.srcObject = null;
+        el.querySelector(".placeholder").classList.remove("hidden");
+        removeTileIfEmpty(key);
+      }
+
+      function setTileMic(key, label, active) {
+        const el = getOrCreateTile(key, label, key === "__self__");
+        el.querySelector(".mic-badge").classList.toggle("active", active);
+        if (!active) removeTileIfEmpty(key);
+      }
+
+      function removeTileIfEmpty(key) {
+        const el = document.getElementById(tileIdFor(key));
+        if (!el) return;
+        const hasVideo = el
+          .querySelector(".tile-video")
+          .classList.contains("active");
+        const hasMic = el
+          .querySelector(".mic-badge")
+          .classList.contains("active");
+        if (!hasVideo && !hasMic) {
+          el.remove();
+          setTimeout(syncSideHeight, 50);
+        }
+      }
+
+      function waitForIceGatheringComplete(pc) {
+        if (pc.iceGatheringState === "complete") return Promise.resolve();
+        return new Promise((resolve) => {
+          function check() {
+            if (pc.iceGatheringState === "complete") {
+              pc.removeEventListener("icegatheringstatechange", check);
+              resolve();
+            }
+          }
+          pc.addEventListener("icegatheringstatechange", check);
+        });
+      }
+
+      function setReqButtonState(reqType, state) {
+        myRequestStatus[reqType] = state;
+        const btn = document.getElementById(
+          reqType === "mic" ? "btn-mic" : "btn-camera",
+        );
+        btn.classList.remove("pending", "live");
+        if (state === "pending") {
+          btn.classList.add("pending");
+          btn.textContent =
+            (reqType === "mic" ? "🎤" : "📷") + " Onay bekleniyor (iptal et)";
+        } else if (state === "live") {
+          btn.classList.add("live");
+          btn.textContent =
+            reqType === "mic" ? "🎤 Mikrofonu Kapat" : "📷 Kamerayı Kapat";
+        } else {
+          btn.textContent =
+            reqType === "mic" ? "🎤 Mikrofon İste" : "📷 Kamera İste";
+        }
+      }
+
+      async function startPublish(reqType) {
+        try {
+          const constraints =
+            reqType === "mic" ? { audio: true } : { video: true };
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          const track = stream.getTracks()[0];
+
+          // Kendi önizlemen: sunucuya hiç gitmeden, direkt bu tarayıcıdan.
+          // Mikrofon ve kamera aynı anda açıksa TEK kutuda gösteriyoruz.
+          if (reqType === "camera") {
+            setTileVideo("__self__", "Sen", stream, true);
+          } else {
+            setTileMic("__self__", "Sen", true);
+          }
+
+          const pc = new RTCPeerConnection();
+          publishPCs[reqType] = pc;
+          const transceiver = pc.addTransceiver(track, {
+            direction: "sendonly",
+          });
+
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          await waitForIceGatheringComplete(pc);
+
+          const trackName =
+            reqType + "-" + myEmail.replace(/[^a-zA-Z0-9]/g, "_");
+          const res = await fetch("/api/realtime/publish", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sdp: pc.localDescription.sdp,
+              tracks: [{ location: "local", mid: transceiver.mid, trackName }],
+            }),
+          });
+          const json = await res.json();
+          if (!json.ok) throw new Error(json.error || "Yayın başlatılamadı");
+
+          await pc.setRemoteDescription({
+            type: "answer",
+            sdp: json.data.sessionDescription.sdp,
+          });
+
+          ws.send(
+            JSON.stringify({
+              type: "track-ready",
+              reqType,
+              sessionId: json.data.sessionId,
+              trackName,
+              name: myEmail,
+            }),
+          );
+
+          setReqButtonState(reqType, "live");
+        } catch (err) {
+          console.error(err);
+          document.getElementById("req-note").textContent =
+            "Hata: " + (err.message || "mikrofon/kamera erişimi başarısız.");
+          setReqButtonState(reqType, "idle");
+        }
+      }
+
+      function stopPublish(reqType) {
+        const pc = publishPCs[reqType];
+        if (pc) {
+          pc.getSenders().forEach((s) => s.track && s.track.stop());
+          pc.close();
+          delete publishPCs[reqType];
+        }
+        if (reqType === "camera") clearTileVideo("__self__");
+        else setTileMic("__self__", "Sen", false);
+        ws.send(JSON.stringify({ type: "stop", reqType }));
+        setReqButtonState(reqType, "idle");
+      }
+
+      async function ensureViewerSession() {
+        if (viewerSessionId) return;
+        const pc = new RTCPeerConnection();
+        pc.ontrack = () => {}; // ilk oturumda henüz track yok
+        viewerPC = pc;
+        // en az bir transceiver olmadan offer/pull akışı bazı SFU'larda sorun çıkarabilir; boş recvonly ekliyoruz
+        pc.addTransceiver("audio", { direction: "recvonly" });
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await waitForIceGatheringComplete(pc);
+
+        const res = await fetch("/api/realtime/pull", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sdp: pc.localDescription.sdp }),
+        });
+        const json = await res.json();
+        if (!json.ok)
+          throw new Error(json.error || "İzleyici oturumu oluşturulamadı");
+        viewerSessionId = json.sessionId || json.data.sessionId;
+        await pc.setRemoteDescription({
+          type: "answer",
+          sdp: json.data.sessionDescription.sdp,
+        });
+      }
+
+      async function subscribeToTrack(participant) {
+        const key = participant.email + ":" + participant.type;
+        if (subscribedTrackKeys.has(key)) return;
+        subscribedTrackKeys.add(key);
+
+        try {
+          await ensureViewerSession();
+
+          // Her track için ayrı bir <video>/<audio> elemanı gerekiyor (WebRTC track'i buraya bağlanacak),
+          // ama görsel olarak kişi başına TEK kutu (tile) gösteriyoruz.
+          let mediaEl;
+          if (participant.type === "camera") {
+            const tile = getOrCreateTile(
+              participant.email,
+              participant.name,
+              false,
+            );
+            mediaEl = tile.querySelector(".tile-video");
+          } else {
+            // Sadece ses için görünmez bir <audio> elemanı oluşturuyoruz, DOM'a eklemiyoruz (gizli çalar)
+            mediaEl = document.createElement("audio");
+            mediaEl.autoplay = true;
+            document.body.appendChild(mediaEl);
+            mediaEl.style.display = "none";
+          }
+
+          viewerPC.ontrack = (event) => {
+            if (!mediaEl.srcObject) {
+              mediaEl.srcObject = new MediaStream([event.track]);
+              if (participant.type === "camera") {
+                mediaEl.classList.add("active");
+                getOrCreateTile(participant.email, participant.name, false)
+                  .querySelector(".placeholder")
+                  .classList.add("hidden");
+              } else {
+                setTileMic(participant.email, participant.name, true);
+              }
+            }
+          };
+
+          const res = await fetch("/api/realtime/pull", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              viewerSessionId,
+              remoteSessionId: participant.sessionId,
+              remoteTrackName: participant.trackName,
+            }),
+          });
+          const json = await res.json();
+          if (!json.ok) throw new Error(json.error || "Track çekilemedi");
+
+          if (json.data.requiresImmediateRenegotiation) {
+            await viewerPC.setRemoteDescription({
+              type: "offer",
+              sdp: json.data.sessionDescription.sdp,
+            });
+            const answer = await viewerPC.createAnswer();
+            await viewerPC.setLocalDescription(answer);
+            await waitForIceGatheringComplete(viewerPC);
+            await fetch("/api/realtime/renegotiate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                sessionId: viewerSessionId,
+                sdp: viewerPC.localDescription.sdp,
+              }),
+            });
+          }
+        } catch (err) {
+          console.error("Katılımcı izlenemedi:", err);
+          subscribedTrackKeys.delete(key);
+        }
+      }
+
+      function removeTile(email, type) {
+        const key = email + ":" + type;
+        subscribedTrackKeys.delete(key);
+        if (type === "camera") clearTileVideo(email);
+        else setTileMic(email, email, false);
+      }
+
+      let knownViewers = new Set(); // şu an sade "katıldı" kutusu olarak gösterilenler
+
+      function renderState(state) {
+        const activeKeys = new Set(
+          state.active.map((a) => a.email + ":" + a.type),
+        );
+        // Artık aktif olmayanları kaldır
+        [...subscribedTrackKeys].forEach((key) => {
+          if (!activeKeys.has(key)) removeTile(...key.split(":"));
+        });
+        // Kendim hariç yeni aktifleri göster
+        state.active.forEach((p) => {
+          if (p.email !== myEmail) subscribeToTrack(p);
+        });
+
+        // Mikrofon/kamera açmadan sadece izleyen kişiler için de "katıldı" kutusu göster
+        const viewers = state.viewers || [];
+        const activeEmails = new Set(state.active.map((a) => a.email));
+        const currentViewerEmails = new Set();
+        viewers.forEach((v) => {
+          if (v.email === myEmail) return; // kendini presence kutusu olarak görme
+          currentViewerEmails.add(v.email);
+          if (!activeEmails.has(v.email)) {
+            // Ne mikrofonu ne kamerası açık — sade bir isim kutusu yeterli
+            getOrCreateTile(v.email, v.name, false);
+          }
+          knownViewers.add(v.email);
+        });
+        // Artık izlemeyen (ve aktif de olmayan) kişilerin sade kutularını kaldır
+        [...knownViewers].forEach((email) => {
+          if (!currentViewerEmails.has(email) && !activeEmails.has(email)) {
+            const el = document.getElementById(tileIdFor(email));
+            if (el) el.remove();
+            knownViewers.delete(email);
+          }
+        });
+
+        renderChat(state.chat || []);
+        setTimeout(syncSideHeight, 100);
+      }
+
+      function escapeHtmlChat(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function renderChat(messages) {
+        const box = document.getElementById("chat-messages");
+        const wasAtBottom =
+          box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+
+        if (!messages.length) {
+          box.innerHTML =
+            '<div class="chat-empty">Henüz mesaj yok. İlk mesajı sen yaz!</div>';
+          return;
+        }
+        box.innerHTML = messages
+          .map(
+            (m) => `
+      <div class="chat-msg">
+        <span class="chat-msg-name">${escapeHtmlChat(m.name)}:</span>
+        <span class="chat-msg-text">${escapeHtmlChat(m.text)}</span>
+      </div>
+    `,
+          )
+          .join("");
+
+        if (wasAtBottom) box.scrollTop = box.scrollHeight;
+      }
+
+      document
+        .getElementById("btn-chat-toggle")
+        .addEventListener("click", () => {
+          const panel = document.getElementById("chat-panel");
+          panel.style.display =
+            panel.style.display === "none" ? "flex" : "none";
+        });
+      document
+        .getElementById("chat-panel-close")
+        .addEventListener("click", () => {
+          document.getElementById("chat-panel").style.display = "none";
+        });
+
+      function showChatWarning(text) {
+        const el = document.getElementById("chat-warning");
+        if (!el) return;
+        el.textContent = "⚠️ " + text;
+        el.style.display = "block";
+        clearTimeout(showChatWarning._t);
+        showChatWarning._t = setTimeout(() => {
+          el.style.display = "none";
+        }, 5000);
+      }
+
+      function sendChatMessage() {
+        const input = document.getElementById("chat-input");
+        const text = input.value.trim();
+        if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+        ws.send(JSON.stringify({ type: "chat-send", text }));
+        input.value = "";
+      }
+      document
+        .getElementById("chat-send-btn")
+        .addEventListener("click", sendChatMessage);
+      document.getElementById("chat-input").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") sendChatMessage();
+      });
+
+      function connectWS() {
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        ws = new WebSocket(
+          proto + "//" + location.host + "/api/room/ws?role=viewer",
+        );
+
+        ws.onmessage = (event) => {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "state") {
+            renderState(msg.state);
+            // Kendi isteklerimin durumunu senkronize et
+            ["mic", "camera"].forEach((t) => {
+              const isPending = msg.state.pending.some(
+                (p) => p.email === myEmail && p.type === t,
+              );
+              const isActive = msg.state.active.some(
+                (a) => a.email === myEmail && a.type === t,
+              );
+              if (isActive) setReqButtonState(t, "live");
+              else if (isPending) setReqButtonState(t, "pending");
+              else if (myRequestStatus[t] !== "idle")
+                setReqButtonState(t, "idle");
+            });
+          } else if (msg.type === "approved") {
+            document.getElementById("req-note").textContent =
+              (msg.reqType === "mic" ? "Mikrofon" : "Kamera") +
+              " isteğiniz onaylandı, yayına bağlanıyor...";
+            startPublish(msg.reqType);
+          } else if (msg.type === "denied") {
+            document.getElementById("req-note").textContent =
+              (msg.reqType === "mic" ? "Mikrofon" : "Kamera") +
+              " isteğiniz reddedildi.";
+            setReqButtonState(msg.reqType, "idle");
+          } else if (msg.type === "revoked") {
+            document.getElementById("req-note").textContent =
+              (msg.reqType === "mic" ? "Mikrofon" : "Kamera") +
+              " erişiminiz moderatör tarafından kapatıldı.";
+            stopPublish(msg.reqType);
+          } else if (msg.type === "chat-blocked") {
+            showChatWarning(msg.reason || "Mesajınız gönderilemedi.");
+          }
+        };
+
+        ws.onclose = (event) => {
+          if (event.code === 4001) {
+            // Moderatör tarafından yayından çıkarıldık — tekrar bağlanmayı deneme, girişe dön
+            alert(
+              "Moderatör tarafından yayından çıkarıldınız. Tekrar giriş yapmanız gerekiyor.",
+            );
+            window.location.href = "/";
+            return;
+          }
+          setTimeout(connectWS, 3000); // basit yeniden bağlanma
+        };
+      }
+
+      document.getElementById("btn-mic").addEventListener("click", () => {
+        const state = myRequestStatus["mic"] || "idle";
+        if (state === "idle") {
+          ws.send(
+            JSON.stringify({ type: "request", reqType: "mic", name: myEmail }),
+          );
+          setReqButtonState("mic", "pending");
+        } else if (state === "pending") {
+          ws.send(JSON.stringify({ type: "cancel-request", reqType: "mic" }));
+          setReqButtonState("mic", "idle");
+          document.getElementById("req-note").textContent =
+            "Mikrofon isteğiniz geri çekildi.";
+        } else if (state === "live") {
+          stopPublish("mic");
+        }
+      });
+      document.getElementById("btn-camera").addEventListener("click", () => {
+        const state = myRequestStatus["camera"] || "idle";
+        if (state === "idle") {
+          ws.send(
+            JSON.stringify({
+              type: "request",
+              reqType: "camera",
+              name: myEmail,
+            }),
+          );
+          setReqButtonState("camera", "pending");
+        } else if (state === "pending") {
+          ws.send(
+            JSON.stringify({ type: "cancel-request", reqType: "camera" }),
+          );
+          setReqButtonState("camera", "idle");
+          document.getElementById("req-note").textContent =
+            "Kamera isteğiniz geri çekildi.";
+        } else if (state === "live") {
+          stopPublish("camera");
+        }
+      });
+
+      (async () => {
+        const res = await fetch("/api/me");
+        if (!res.ok) {
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("error").style.display = "block";
+          setTimeout(() => (window.location.href = "/"), 2000);
+          return;
+        }
+        const data = await res.json();
+        myEmail = data.email;
+        const src =
+          "https://" +
+          data.streamCustomerCode +
+          ".cloudflarestream.com/" +
+          data.liveInputUid +
+          "/iframe";
+        document.getElementById("player").innerHTML =
+          '<iframe src="' +
+          src +
+          '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("player").style.display = "block";
+        document.getElementById("req-bar").style.display = "flex";
+        connectWS();
+        setTimeout(syncSideHeight, 300);
+      })();
+
+      document.getElementById("logout").addEventListener("click", () => {
+        document.getElementById("feedback-modal").style.display = "flex";
+      });
+
+      // ✕ butonuna ya da boş (koyu) alana tıklayınca, çıkış yapmadan sadece
+      // pencereyi kapatıp yayına geri dön — yanlışlıkla "Çıkış Yap"a basıldıysa diye.
+      function closeFeedbackModal() {
+        document.getElementById("feedback-modal").style.display = "none";
+      }
+      document
+        .getElementById("feedback-close")
+        .addEventListener("click", closeFeedbackModal);
+      document
+        .getElementById("feedback-modal")
+        .addEventListener("click", (e) => {
+          if (e.target.id === "feedback-modal") closeFeedbackModal();
+        });
+
+      async function doLogout() {
+        await fetch("/api/logout", { method: "POST" });
+        window.location.href = "/";
+      }
+
+      let selectedRating = 0;
+      document.querySelectorAll("#star-rating .star").forEach((star) => {
+        star.addEventListener("click", () => {
+          selectedRating = parseInt(star.dataset.value, 10);
+          document.querySelectorAll("#star-rating .star").forEach((s) => {
+            s.classList.toggle(
+              "active",
+              parseInt(s.dataset.value, 10) <= selectedRating,
+            );
+          });
+        });
+      });
+
+      document
+        .getElementById("feedback-skip")
+        .addEventListener("click", doLogout);
+
+      document
+        .getElementById("feedback-submit")
+        .addEventListener("click", async () => {
+          const systemFeedback = document
+            .getElementById("system-feedback")
+            .value.trim();
+          const personalFeedback = document
+            .getElementById("personal-feedback")
+            .value.trim();
+          try {
+            await fetch("/api/feedback", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                rating: selectedRating || null,
+                systemFeedback: systemFeedback || null,
+                personalFeedback: personalFeedback || null,
+              }),
+            });
+          } catch (err) {
+            console.error("Anket gönderilemedi:", err);
+          }
+          doLogout();
+        });
+    </script>
+  </body>
+</html>
